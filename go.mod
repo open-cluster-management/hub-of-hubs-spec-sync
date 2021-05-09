@@ -1,4 +1,4 @@
-module github.com/open-cluster-management/governance-policy-spec-sync
+module github.com/open-cluster-management/hub-of-hubs-operator
 
 go 1.14
 
