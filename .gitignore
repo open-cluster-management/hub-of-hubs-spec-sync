@@ -16,3 +16,6 @@
 
 # emacs backup files
 *~
+
+# build binary files
+build/_output
