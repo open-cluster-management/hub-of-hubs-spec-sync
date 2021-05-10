@@ -49,13 +49,6 @@ func ProcessFlags() {
 		Options.HubConfigFilePathName,
 		"Configuration file pathname to hub kubernetes cluster",
 	)
-
-	flag.StringVar(
-		&Options.ManagedConfigFilePathName,
-		"managed-cluster-configfile",
-		Options.ManagedConfigFilePathName,
-		"Configuration file pathname to managed kubernetes cluster",
-	)
 }
 
 // DeleteClusterNs deletes the cluster namespace on managed cluster if not exists
