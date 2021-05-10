@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: governance-policy-spec-sync
+      name: hub-of-hubs-operator
   template:
     metadata:
       labels:
-        name: governance-policy-spec-sync
+        name: hub-of-hubs-operator
     spec:
-      serviceAccountName: governance-policy-spec-sync
+      serviceAccountName: hub-of-hubs-operator
       containers:
-        - name: governance-policy-spec-sync
-          image: quay.io/open-cluster-management/governance-policy-spec-sync:latest-dev
+        - name: hub-of-hubs-operator
+          image: quay.io/open-cluster-management/hub-of-hubs-operator:latest-dev
           command:
-          - governance-policy-spec-sync
+          - hub-of-hubs-operator
           args:
             - '--hub-cluster-configfile=/var/run/klusterlet/kubeconfig'
           imagePullPolicy: Always
@@ -33,7 +33,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "governance-policy-spec-sync"
+              value: "hub-of-hubs-operator"
       volumes:
         - name: klusterlet-config
           secret:
@@ -44,21 +44,21 @@ spec:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
 subjects:
 - kind: ServiceAccount
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
   namespace: open-cluster-management-agent-addon
 roleRef:
   kind: ClusterRole
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
   apiGroup: rbac.authorization.k8s.io
 
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
 rules:
 - apiGroups:
   - "policy.open-cluster-management.io"
@@ -90,20 +90,20 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
 subjects:
 - kind: ServiceAccount
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
 roleRef:
   kind: Role
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
   apiGroup: rbac.authorization.k8s.io
 
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
 rules:
 - apiGroups:
   - ""
@@ -151,7 +151,7 @@ rules:
   resources:
   - deployments/finalizers
   resourceNames:
-  - governance-policy-spec-sync
+  - hub-of-hubs-operator
   verbs:
   - "update"
 - apiGroups:
@@ -172,4 +172,4 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: governance-policy-spec-sync
+  name: hub-of-hubs-operator
