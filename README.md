@@ -5,10 +5,9 @@ Red Hat Advanced Cluster Management Hub-of-Hubs Operator
 
 ## How it works
 
-## Run
+## Run Locally
 
 ```
-export WATCH_NAMESPACE=some_namespace_on_hub
-operator-sdk run --local --operator-flags "--hub-cluster-configfile=path_to_kubeconfig"
+WATCH_NAMESPACE=myproject  ./build/_output/bin/hub-of-hubs-operator --hub-cluster-configfile $TOP_HUB_CONFIG
 ```
 
