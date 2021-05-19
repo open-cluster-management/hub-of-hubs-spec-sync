@@ -31,7 +31,7 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcilePolicy{hubClient: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcilePolicy{client: mgr.GetClient(), scheme: mgr.GetScheme()}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -56,8 +56,8 @@ var _ reconcile.Reconciler = &ReconcilePolicy{}
 
 // ReconcilePolicy reconciles a Policy object
 type ReconcilePolicy struct {
-	hubClient client.Client
-	scheme    *runtime.Scheme
+	client client.Client
+	scheme *runtime.Scheme
 }
 
 // Reconcile reads that state of the cluster for a Policy object and makes changes based on the state read
@@ -71,7 +71,7 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 
 	// Fetch the Policy instance
 	instance := &policiesv1.Policy{}
-	err := r.hubClient.Get(context.TODO(), request.NamespacedName, instance)
+	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
