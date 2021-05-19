@@ -7,6 +7,12 @@ Red Hat Advanced Cluster Management Hub-of-Hubs Spec Syncer
 
 ## How it works
 
+## Build to run locally
+
+```
+make build
+```
+
 ## Run Locally
 
 ```
