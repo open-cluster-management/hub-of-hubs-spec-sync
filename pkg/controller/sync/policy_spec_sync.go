@@ -56,8 +56,8 @@ var _ reconcile.Reconciler = &ReconcilePolicy{}
 
 // ReconcilePolicy reconciles a Policy object
 type ReconcilePolicy struct {
-	hubClient       client.Client
-	scheme          *runtime.Scheme
+	hubClient client.Client
+	scheme    *runtime.Scheme
 }
 
 // Reconcile reads that state of the cluster for a Policy object and makes changes based on the state read
