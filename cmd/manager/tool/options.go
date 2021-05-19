@@ -19,7 +19,6 @@ type PolicySpecSyncOptions struct {
 	ClusterName               string
 	ClusterNamespace          string
 	HubConfigFilePathName     string
-	ManagedConfigFilePathName string
 }
 
 // Options default value
