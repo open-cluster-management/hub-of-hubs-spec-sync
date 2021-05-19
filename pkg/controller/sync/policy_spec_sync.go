@@ -5,8 +5,10 @@ package sync
 
 import (
 	"context"
+	"fmt"
 
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -70,5 +72,20 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 	// Fetch the Policy instance
 	instance := &policiesv1.Policy{}
 	err := r.hubClient.Get(context.TODO(), request.NamespacedName, instance)
+
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// repliated policy on hub was deleted, remove policy on managed cluster
+			reqLogger.Info("Policy was deleted, removing in the database...")
+
+			reqLogger.Info("Policy has been removed from the database...Reconciliation complete.")
+			return reconcile.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		reqLogger.Error(err, "Failed to get policy from hub...")
+		return reconcile.Result{}, err
+	}
+
+	reqLogger.Info(fmt.Sprintf("Policy: %v", instance))
 	return reconcile.Result{}, err
 }
