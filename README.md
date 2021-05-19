@@ -16,6 +16,5 @@ make build
 ## Run Locally
 
 ```
-WATCH_NAMESPACE=myproject  ./build/_output/bin/hub-of-hubs-operator --hub-cluster-configfile $TOP_HUB_CONFIG
+WATCH_NAMESPACE=myproject  ./build/_output/bin/hub-of-hubs-spec-syncer --hub-cluster-configfile $TOP_HUB_CONFIG
 ```
-
