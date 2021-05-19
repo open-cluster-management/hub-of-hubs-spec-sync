@@ -25,13 +25,13 @@ var log = logf.Log.WithName(controllerName)
 
 // Add creates a new Policy Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+func Add(mgr manager.Manager, databaseUser string) error {
+	return add(mgr, newReconciler(mgr, databaseUser))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcilePolicy{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+func newReconciler(mgr manager.Manager, databaseUser string) reconcile.Reconciler {
+	return &ReconcilePolicy{client: mgr.GetClient(), scheme: mgr.GetScheme(), databaseUser: databaseUser}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -56,8 +56,9 @@ var _ reconcile.Reconciler = &ReconcilePolicy{}
 
 // ReconcilePolicy reconciles a Policy object
 type ReconcilePolicy struct {
-	client client.Client
-	scheme *runtime.Scheme
+	client       client.Client
+	scheme       *runtime.Scheme
+	databaseUser string
 }
 
 // Reconcile reads that state of the cluster for a Policy object and makes changes based on the state read

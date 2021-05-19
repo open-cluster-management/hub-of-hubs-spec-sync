@@ -78,13 +78,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Get hubconfig to talk to hub apiserver
-	if tool.Options.HubConfigFilePathName == "" {
+	// Get database user to talk to the database
+	if tool.Options.DatabaseUserName == "" {
 		found := false
-		tool.Options.HubConfigFilePathName, found = os.LookupEnv("HUB_CONFIG")
+		tool.Options.DatabaseUserName, found = os.LookupEnv("DB_USERNAME")
 		if found {
-			log.Info("Found ENV HUB_CONFIG, initializing using", "tool.Options.HubConfigFilePathName",
-				tool.Options.HubConfigFilePathName)
+			log.Info("Found ENV DB_USERNAME, initializing...")
 		}
 	}
 
@@ -133,7 +132,7 @@ func main() {
 	}
 
 	// Setup all Controllers
-	if err := controller.AddToManager(mgr); err != nil {
+	if err := controller.AddToManager(mgr, tool.Options.HubConfigFilePathName); err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}
