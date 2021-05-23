@@ -90,5 +90,18 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 
 	reqLogger.Info(fmt.Sprintf("Policy: %v", instance))
+
+	rows, err := r.databaseConnectionPool.Query(context.Background(), "select payload -> 'metadata' -> 'name' as name from spec.policies")
+	if err != nil {
+		log.Error(err, "Query failed")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		rows.Scan(&name)
+		log.Info(name)
+	}
+
 	return reconcile.Result{}, err
 }

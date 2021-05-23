@@ -101,19 +101,6 @@ func main() {
 	}
 	defer dbConnectionPool.Close()
 
-	rows, err := dbConnectionPool.Query(context.Background(), "select payload -> 'metadata' -> 'name' as name from spec.policies")
-	if err != nil {
-		log.Error(err, "Query failed")
-		os.Exit(1)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var name string
-		rows.Scan(&name)
-		log.Info(name)
-	}
-
 	hubCfg, err := clientcmd.BuildConfigFromFlags("", tool.Options.HubConfigFilePathName)
 	if err != nil {
 		log.Error(err, "")
