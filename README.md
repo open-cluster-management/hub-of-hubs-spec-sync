@@ -22,7 +22,7 @@ Set the following environment variables:
 
 Set the `DATABASE_URL` according to the PostgreSQL URL format: `postgres://YourUserName:YourURLEscapedPassword@YourHostname:5432/YourDatabaseName?sslmode=verify-full`.
 
-:exclamation-mark: Remember to URL-escape the password, you can do it in bash:
+:exclamation: Remember to URL-escape the password, you can do it in bash:
 
 ```
 python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1])" 'YourPassword'
