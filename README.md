@@ -19,7 +19,7 @@ Set the following environment variables:
 
 * DB_HOST
 * DB_PORT
-* DB_USERNAME
+* DB_USER
 * DB_NAME
 * DB_PASSWORD
 * WATCH_NAMESPACE

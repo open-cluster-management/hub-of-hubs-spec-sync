@@ -13,7 +13,7 @@ var log = logf.Log.WithName("cmd")
 // HubOfHubsSpecSyncOptions for command line flag parsing
 type HubOfHubsSpecSyncOptions struct {
 	HubConfigFilePathName string
-	DatabaseUserName      string
+	DatabaseUser          string
 	DatabasePassword      string
 	DatabasePort          int
 	DatabaseName          string

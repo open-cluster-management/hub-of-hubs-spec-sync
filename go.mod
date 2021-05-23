@@ -1,19 +1,16 @@
-module github.com/open-cluster-management/hub-of-hubs-operator
+module github.com/open-cluster-management/hub-of-hubs-spec-syncer
 
-go 1.14
+go 1.16
 
 require (
-	github.com/onsi/ginkgo v1.14.1
-	github.com/onsi/gomega v1.10.2
+	github.com/jackc/pgx/v4 v4.11.0
+	github.com/onsi/gomega v1.10.2 // indirect
 	github.com/open-cluster-management/api v0.0.0-20200610161514-939cead3902c
 	github.com/open-cluster-management/governance-policy-propagator v0.0.0-20210409191610-0ec1d5a4e19d
 	github.com/operator-framework/operator-sdk v0.18.1
-	github.com/prometheus/common v0.9.1
 	github.com/spf13/pflag v1.0.5
-	k8s.io/api v0.18.3
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v12.0.0+incompatible
-	k8s.io/klog v1.0.0
 	sigs.k8s.io/controller-runtime v0.6.0
 )
 

@@ -7,6 +7,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"runtime"
 	"strconv"
@@ -17,10 +18,12 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/open-cluster-management/hub-of-hubs-operator/cmd/manager/tool"
-	"github.com/open-cluster-management/hub-of-hubs-operator/pkg/apis"
-	"github.com/open-cluster-management/hub-of-hubs-operator/pkg/controller"
-	"github.com/open-cluster-management/hub-of-hubs-operator/version"
+	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/cmd/manager/tool"
+	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/apis"
+	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller"
+	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/version"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
@@ -42,7 +45,7 @@ var (
 var log = logf.Log.WithName("cmd")
 
 const (
-	environmentVariableDatabaseUserName = "DB_USERNAME"
+	environmentVariableDatabaseUser     = "DB_USER"
 	environmentVariableDatabasePassword = "DB_PASSWORD"
 	environmentVariableDatabaseHost     = "DB_HOST"
 	environmentVariableDatabasePort     = "DB_PORT"
@@ -88,11 +91,11 @@ func main() {
 	}
 
 	// Get database user
-	if tool.Options.DatabaseUserName == "" {
+	if tool.Options.DatabaseUser == "" {
 		found := false
-		tool.Options.DatabaseUserName, found = os.LookupEnv(environmentVariableDatabaseUserName)
+		tool.Options.DatabaseUser, found = os.LookupEnv(environmentVariableDatabaseUser)
 		if found {
-			log.Info("Found:", "environment variable", environmentVariableDatabaseUserName)
+			log.Info("Found:", "environment variable", environmentVariableDatabaseUser)
 		}
 	}
 
@@ -134,6 +137,28 @@ func main() {
 			log.Info("Found:", "environment variable", environmentVariableDatabaseName)
 		}
 	}
+
+	postgresURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=verify-full",
+		tool.Options.DatabaseUser, url.QueryEscape(tool.Options.DatabasePassword), tool.Options.DatabaseHost,
+		tool.Options.DatabasePort, tool.Options.DatabaseName)
+
+	// open database
+	dbConnectionPool, err := pgxpool.Connect(context.Background(), postgresURL)
+	if err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+
+	defer dbConnectionPool.Close()
+
+	var greeting string
+	err = dbConnectionPool.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
+	if err != nil {
+		log.Error(err, "QueryRow failed")
+		os.Exit(1)
+	}
+
+	log.Info(greeting)
 
 	hubCfg, err := clientcmd.BuildConfigFromFlags("", tool.Options.HubConfigFilePathName)
 	if err != nil {

@@ -4,7 +4,7 @@
 package controller
 
 import (
-	"github.com/open-cluster-management/hub-of-hubs-operator/pkg/controller/sync"
+	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller/sync"
 )
 
 func init() {
