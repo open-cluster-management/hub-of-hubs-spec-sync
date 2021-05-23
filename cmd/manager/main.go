@@ -148,17 +148,22 @@ func main() {
 		log.Error(err, "")
 		os.Exit(1)
 	}
-
 	defer dbConnectionPool.Close()
 
-	var greeting string
-	err = dbConnectionPool.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
+
+	rows, err := dbConnectionPool.Query(context.Background(), "select payload -> 'metadata' -> 'name' as name from spec.policies")
 	if err != nil {
-		log.Error(err, "QueryRow failed")
+		log.Error(err, "Query failed")
 		os.Exit(1)
 	}
+	defer rows.Close()
 
-	log.Info(greeting)
+	for rows.Next() {
+		var name string
+		rows.Scan(&name)
+		log.Info(name)
+	}
+
 
 	hubCfg, err := clientcmd.BuildConfigFromFlags("", tool.Options.HubConfigFilePathName)
 	if err != nil {
