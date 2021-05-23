@@ -17,21 +17,23 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-const controllerName string = "policy-spec-sync"
+const controllerName string = "policy-spec-syncer"
 
 var log = logf.Log.WithName(controllerName)
 
 // Add creates a new Policy Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, databaseUser string) error {
-	return add(mgr, newReconciler(mgr, databaseUser))
+func Add(mgr manager.Manager, databaseConnectionPool *pgxpool.Pool) error {
+	return add(mgr, newReconciler(mgr, databaseConnectionPool))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, databaseUser string) reconcile.Reconciler {
-	return &ReconcilePolicy{client: mgr.GetClient(), scheme: mgr.GetScheme(), databaseUser: databaseUser}
+func newReconciler(mgr manager.Manager, databaseConnectionPool *pgxpool.Pool) reconcile.Reconciler {
+	return &ReconcilePolicy{client: mgr.GetClient(), scheme: mgr.GetScheme(), databaseConnectionPool: databaseConnectionPool}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -56,9 +58,9 @@ var _ reconcile.Reconciler = &ReconcilePolicy{}
 
 // ReconcilePolicy reconciles a Policy object
 type ReconcilePolicy struct {
-	client       client.Client
-	scheme       *runtime.Scheme
-	databaseUser string
+	client                 client.Client
+	scheme                 *runtime.Scheme
+	databaseConnectionPool *pgxpool.Pool
 }
 
 // Reconcile reads that state of the cluster for a Policy object and makes changes based on the state read

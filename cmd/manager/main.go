@@ -7,10 +7,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"net/url"
 	"os"
 	"runtime"
-	"strconv"
 	"strings"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -45,11 +43,7 @@ var (
 var log = logf.Log.WithName("cmd")
 
 const (
-	environmentVariableDatabaseUser     = "DB_USER"
-	environmentVariableDatabasePassword = "DB_PASSWORD"
-	environmentVariableDatabaseHost     = "DB_HOST"
-	environmentVariableDatabasePort     = "DB_PORT"
-	environmentVariableDatabaseName     = "DB_NAME"
+	environmentVariableDatabaseURL = "DATABASE_URL"
 )
 
 func printVersion() {
@@ -90,66 +84,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Get database user
-	if tool.Options.DatabaseUser == "" {
+	// Get database URL
+	if tool.Options.DatabaseURL == "" {
 		found := false
-		tool.Options.DatabaseUser, found = os.LookupEnv(environmentVariableDatabaseUser)
+		tool.Options.DatabaseURL, found = os.LookupEnv(environmentVariableDatabaseURL)
 		if found {
-			log.Info("Found:", "environment variable", environmentVariableDatabaseUser)
+			log.Info("Found:", "environment variable", environmentVariableDatabaseURL)
 		}
 	}
-
-	// Get database password
-	if tool.Options.DatabasePassword == "" {
-		found := false
-		tool.Options.DatabasePassword, found = os.LookupEnv(environmentVariableDatabasePassword)
-		if found {
-			log.Info("Found:", "environment variable", environmentVariableDatabasePassword)
-		}
-	}
-
-	// Get database host
-	if tool.Options.DatabaseHost == "" {
-		found := false
-		tool.Options.DatabaseHost, found = os.LookupEnv(environmentVariableDatabaseHost)
-		if found {
-			log.Info("Found:", "environment variable", environmentVariableDatabaseHost)
-		}
-	}
-
-	// Get database port
-	if tool.Options.DatabasePort == 0 {
-		found := false
-		databasePortAsString, found := os.LookupEnv(environmentVariableDatabasePort)
-		if found {
-			tool.Options.DatabasePort, err = strconv.Atoi(databasePortAsString)
-			if err == nil {
-				log.Info("Found:", "environment variable", environmentVariableDatabasePort)
-			}
-		}
-	}
-
-	// Get database name
-	if tool.Options.DatabaseName == "" {
-		found := false
-		tool.Options.DatabaseName, found = os.LookupEnv(environmentVariableDatabaseName)
-		if found {
-			log.Info("Found:", "environment variable", environmentVariableDatabaseName)
-		}
-	}
-
-	postgresURL := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=verify-full",
-		tool.Options.DatabaseUser, url.QueryEscape(tool.Options.DatabasePassword), tool.Options.DatabaseHost,
-		tool.Options.DatabasePort, tool.Options.DatabaseName)
 
 	// open database
-	dbConnectionPool, err := pgxpool.Connect(context.Background(), postgresURL)
+	dbConnectionPool, err := pgxpool.Connect(context.Background(), tool.Options.DatabaseURL)
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}
 	defer dbConnectionPool.Close()
-
 
 	rows, err := dbConnectionPool.Query(context.Background(), "select payload -> 'metadata' -> 'name' as name from spec.policies")
 	if err != nil {
@@ -163,7 +113,6 @@ func main() {
 		rows.Scan(&name)
 		log.Info(name)
 	}
-
 
 	hubCfg, err := clientcmd.BuildConfigFromFlags("", tool.Options.HubConfigFilePathName)
 	if err != nil {
@@ -210,7 +159,7 @@ func main() {
 	}
 
 	// Setup all Controllers
-	if err := controller.AddToManager(mgr, tool.Options.HubConfigFilePathName); err != nil {
+	if err := controller.AddToManager(mgr, dbConnectionPool); err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}

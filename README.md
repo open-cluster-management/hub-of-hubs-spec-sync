@@ -17,12 +17,16 @@ make build
 
 Set the following environment variables:
 
-* DB_HOST
-* DB_PORT
-* DB_USER
-* DB_NAME
-* DB_PASSWORD
+* DATABASE_URL
 * WATCH_NAMESPACE
+
+Set the `DATABASE_URL` according to the PostgreSQL URL format: `postgres://YourUserName:YourURLEscapedPassword@YourHostname:5432/YourDatabaseName?sslmode=verify-full`.
+
+:exclamation-mark: Remember to URL-escape the password, you can do it in bash:
+
+```
+python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1])" 'YourPassword'
+```
 
 ```
 ./build/_output/bin/hub-of-hubs-spec-syncer --hub-cluster-configfile $TOP_HUB_CONFIG
