@@ -15,6 +15,15 @@ make build
 
 ## Run Locally
 
+Set the following environment variables:
+
+* DB_HOST
+* DB_PORT
+* DB_USERNAME
+* DB_NAME
+* DB_PASSWORD
+* WATCH_NAMESPACE
+
 ```
-WATCH_NAMESPACE=myproject  ./build/_output/bin/hub-of-hubs-spec-syncer --hub-cluster-configfile $TOP_HUB_CONFIG
+./build/_output/bin/hub-of-hubs-spec-syncer --hub-cluster-configfile $TOP_HUB_CONFIG
 ```

@@ -14,6 +14,10 @@ var log = logf.Log.WithName("cmd")
 type HubOfHubsSpecSyncOptions struct {
 	HubConfigFilePathName string
 	DatabaseUserName      string
+	DatabasePassword      string
+	DatabasePort          int
+	DatabaseName          string
+	DatabaseHost          string
 }
 
 // Options default value
@@ -28,12 +32,5 @@ func ProcessFlags() {
 		"hub-cluster-configfile",
 		Options.HubConfigFilePathName,
 		"Configuration file pathname to hub kubernetes cluster",
-	)
-
-	flag.StringVar(
-		&Options.DatabaseUserName,
-		"database-user-name",
-		Options.DatabaseUserName,
-		"The user name to connect to the database",
 	)
 }

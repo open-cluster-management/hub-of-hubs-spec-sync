@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -39,6 +40,14 @@ var (
 	operatorMetricsPort int32 = 8687
 )
 var log = logf.Log.WithName("cmd")
+
+const (
+	environmentVariableDatabaseUserName = "DB_USERNAME"
+	environmentVariableDatabasePassword = "DB_PASSWORD"
+	environmentVariableDatabaseHost     = "DB_HOST"
+	environmentVariableDatabasePort     = "DB_PORT"
+	environmentVariableDatabaseName     = "DB_NAME"
+)
 
 func printVersion() {
 	log.Info(fmt.Sprintf("Operator Version: %s", version.Version))
@@ -78,12 +87,51 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Get database user to talk to the database
+	// Get database user
 	if tool.Options.DatabaseUserName == "" {
 		found := false
-		tool.Options.DatabaseUserName, found = os.LookupEnv("DB_USERNAME")
+		tool.Options.DatabaseUserName, found = os.LookupEnv(environmentVariableDatabaseUserName)
 		if found {
-			log.Info("Found ENV DB_USERNAME, initializing...")
+			log.Info("Found:", "environment variable", environmentVariableDatabaseUserName)
+		}
+	}
+
+	// Get database password
+	if tool.Options.DatabasePassword == "" {
+		found := false
+		tool.Options.DatabasePassword, found = os.LookupEnv(environmentVariableDatabasePassword)
+		if found {
+			log.Info("Found:", "environment variable", environmentVariableDatabasePassword)
+		}
+	}
+
+	// Get database host
+	if tool.Options.DatabaseHost == "" {
+		found := false
+		tool.Options.DatabaseHost, found = os.LookupEnv(environmentVariableDatabaseHost)
+		if found {
+			log.Info("Found:", "environment variable", environmentVariableDatabaseHost)
+		}
+	}
+
+	// Get database port
+	if tool.Options.DatabasePort == 0 {
+		found := false
+		databasePortAsString, found := os.LookupEnv(environmentVariableDatabasePort)
+		if found {
+			tool.Options.DatabasePort, err = strconv.Atoi(databasePortAsString)
+			if err == nil {
+				log.Info("Found:", "environment variable", environmentVariableDatabasePort)
+			}
+		}
+	}
+
+	// Get database name
+	if tool.Options.DatabaseName == "" {
+		found := false
+		tool.Options.DatabaseName, found = os.LookupEnv(environmentVariableDatabaseName)
+		if found {
+			log.Info("Found:", "environment variable", environmentVariableDatabaseName)
 		}
 	}
 
