@@ -17,6 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -97,22 +98,24 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	_, err = r.databaseConnectionPool.Exec(context.Background(),
-		"INSERT INTO spec.policies (id,payload) values($1, $2::jsonb)", string(instance.UID), &instance)
-	if err != nil {
-		log.Error(err, "Insert failed")
+	instanceInTheDatabase := &policiesv1.Policy{}
+	err = r.databaseConnectionPool.QueryRow(context.Background(),
+		`SELECT payload FROM spec.policies WHERE id = $1 AND payload -> 'metadata' ->> 'name' = $2 AND
+	       payload -> 'metadata' ->> 'namespace' = $3`, string(instance.UID), request.Name, request.Namespace).Scan(&instanceInTheDatabase)
+
+	if err == pgx.ErrNoRows {
+		reqLogger.Info("The Policy with the current UID does not exist in the database, inserting...")
+		_, err = r.databaseConnectionPool.Exec(context.Background(),
+			"INSERT INTO spec.policies (id,payload) values($1, $2::jsonb)", string(instance.UID), &instance)
+		if err != nil {
+			log.Error(err, "Insert failed")
+		}
+		reqLogger.Info("Policy has been inserted into the database...Reconciliation complete.")
+		return reconcile.Result{}, nil
 	}
 
-	rows, err := r.databaseConnectionPool.Query(context.Background(), "select payload -> 'metadata' -> 'name' as name from spec.policies")
 	if err != nil {
-		log.Error(err, "Query failed")
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var name string
-		rows.Scan(&name)
-		log.Info(name)
+		log.Error(err, "Querying Insert failed")
 	}
 
 	return reconcile.Result{}, err
