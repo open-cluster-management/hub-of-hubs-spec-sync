@@ -114,9 +114,5 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, nil
 	}
 
-	if err != nil {
-		log.Error(err, "Querying Insert failed")
-	}
-
 	return reconcile.Result{}, err
 }
