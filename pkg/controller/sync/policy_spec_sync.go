@@ -84,7 +84,7 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 
 			_, err = r.databaseConnectionPool.Exec(context.Background(),
 				`UPDATE spec.policies SET deleted = true WHERE payload -> 'metadata' ->> 'name' = $1 AND
-			     payload -> 'metadata' ->> 'namespace' = $2`, request.Name, request.Namespace)
+			     payload -> 'metadata' ->> 'namespace' = $2 AND deleted = false`, request.Name, request.Namespace)
 
 			if err != nil {
 				log.Error(err, "Delete failed")
