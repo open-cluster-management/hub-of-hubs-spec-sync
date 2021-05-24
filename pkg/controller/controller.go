@@ -4,8 +4,8 @@
 package controller
 
 import (
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // AddToManagerFuncs is a list of functions to add all Controllers to the Manager
