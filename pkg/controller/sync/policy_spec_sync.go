@@ -19,6 +19,7 @@ import (
 
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/open-cluster-management/governance-policy-propagator/pkg/controller/common"
 )
 
 const controllerName string = "policy-spec-syncer"
@@ -112,6 +113,19 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		}
 		reqLogger.Info("Policy has been inserted into the database...Reconciliation complete.")
 		return reconcile.Result{}, nil
+	}
+
+	// found, then compare and update
+	if !common.CompareSpecAndAnnotation(instance, instanceInTheDatabase) {
+		reqLogger.Info("Policy mismatch between hub and the database, updating the database...")
+		_, err = r.databaseConnectionPool.Exec(context.Background(),
+			`UPDATE spec.policies SET payload = $1 WHERE id = $2 AND payload -> 'metadata' ->> 'name' = $3 AND
+			     payload -> 'metadata' ->> 'namespace' = $4`, &instance, string(instance.UID), request.Name, request.Namespace)
+
+		if err != nil {
+			log.Error(err, "Update failed")
+			return reconcile.Result{}, err
+		}
 	}
 
 	return reconcile.Result{}, err
