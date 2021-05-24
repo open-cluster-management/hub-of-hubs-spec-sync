@@ -5,7 +5,6 @@ package sync
 
 import (
 	"context"
-	"fmt"
 
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -78,10 +77,19 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// repliated policy on hub was deleted, remove policy on managed cluster
-			reqLogger.Info("Policy was deleted, removing in the database...")
+			// repliated policy on hub was deleted, update all the matching policies in the database as deleted
+			reqLogger.Info("Policy was deleted, update the deleted field in the database...")
 
-			reqLogger.Info("Policy has been removed from the database...Reconciliation complete.")
+			_, err = r.databaseConnectionPool.Exec(context.Background(),
+				`UPDATE spec.policies SET deleted = true WHERE payload -> 'metadata' ->> 'name' = $1 AND
+			     payload -> 'metadata' ->> 'namespace' = $2`, request.Name, request.Namespace)
+
+			if err != nil {
+				log.Error(err, "Delete failed")
+				return reconcile.Result{}, err
+			}
+
+			reqLogger.Info("Policy has been updated as deleted in the database...Reconciliation complete.")
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -89,7 +97,11 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	reqLogger.Info(fmt.Sprintf("Policy: %v", instance))
+	_, err = r.databaseConnectionPool.Exec(context.Background(),
+		"INSERT INTO spec.policies (id,payload) values($1, $2::jsonb)", string(instance.UID), &instance)
+	if err != nil {
+		log.Error(err, "Insert failed")
+	}
 
 	rows, err := r.databaseConnectionPool.Query(context.Background(), "select payload -> 'metadata' -> 'name' as name from spec.policies")
 	if err != nil {
