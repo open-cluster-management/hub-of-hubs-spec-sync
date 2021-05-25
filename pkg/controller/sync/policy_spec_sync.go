@@ -101,8 +101,7 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 
 	instanceInTheDatabase := &policiesv1.Policy{}
 	err = r.databaseConnectionPool.QueryRow(context.Background(),
-		`SELECT payload FROM spec.policies WHERE id = $1 AND payload -> 'metadata' ->> 'name' = $2 AND
-	       payload -> 'metadata' ->> 'namespace' = $3`, string(instance.UID), request.Name, request.Namespace).Scan(&instanceInTheDatabase)
+		`SELECT payload FROM spec.policies WHERE id = $1`, string(instance.UID)).Scan(&instanceInTheDatabase)
 
 	if err == pgx.ErrNoRows {
 		reqLogger.Info("The Policy with the current UID does not exist in the database, inserting...")
@@ -127,8 +126,7 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		reqLogger.Info("Policy mismatch between hub and the database, updating the database...")
 
 		_, err = r.databaseConnectionPool.Exec(context.Background(),
-			`UPDATE spec.policies SET payload = $1 WHERE id = $2 AND payload -> 'metadata' ->> 'name' = $3 AND
-			     payload -> 'metadata' ->> 'namespace' = $4`, &instance, string(instance.UID), request.Name, request.Namespace)
+			`UPDATE spec.policies SET payload = $1 WHERE id = $2`, &instance, string(instance.UID))
 
 		if err != nil {
 			log.Error(err, "Update failed")
