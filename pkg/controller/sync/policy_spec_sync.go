@@ -115,9 +115,17 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, nil
 	}
 
+	//TODO handle Template comparison later
+	instanceWithoutTemplates := instance.DeepCopy()
+	instanceWithoutTemplates.Spec.PolicyTemplates = nil
+
+	instanceInTheDatabaseWithoutTemplates := instanceInTheDatabase.DeepCopy()
+	instanceInTheDatabaseWithoutTemplates.Spec.PolicyTemplates = nil
+
 	// found, then compare and update
-	if !common.CompareSpecAndAnnotation(instance, instanceInTheDatabase) {
+	if !common.CompareSpecAndAnnotation(instanceWithoutTemplates, instanceInTheDatabaseWithoutTemplates) {
 		reqLogger.Info("Policy mismatch between hub and the database, updating the database...")
+
 		_, err = r.databaseConnectionPool.Exec(context.Background(),
 			`UPDATE spec.policies SET payload = $1 WHERE id = $2 AND payload -> 'metadata' ->> 'name' = $3 AND
 			     payload -> 'metadata' ->> 'namespace' = $4`, &instance, string(instance.UID), request.Name, request.Namespace)
