@@ -79,24 +79,31 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// repliated policy on hub was deleted, update all the matching policies in the database as deleted
-			reqLogger.Info("Policy was deleted, update the deleted field in the database...")
-
-			_, err = r.databaseConnectionPool.Exec(context.Background(),
-				`UPDATE spec.policies SET deleted = true WHERE payload -> 'metadata' ->> 'name' = $1 AND
-			     payload -> 'metadata' ->> 'namespace' = $2 AND deleted = false`, request.Name, request.Namespace)
-
+			// the policy on hub was deleted, update all the matching policies in the database as deleted
+			err = r.delete(request.Name, request.Namespace)
 			if err != nil {
 				log.Error(err, "Delete failed")
 				return reconcile.Result{}, err
 			}
 
-			reqLogger.Info("Policy has been updated as deleted in the database...Reconciliation complete.")
+			reqLogger.Info("Reconciliation complete.")
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
 		reqLogger.Error(err, "Failed to get policy from hub...")
 		return reconcile.Result{}, err
+	}
+
+	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
+		// the policy is being deleted, update all the matching policies in the database as deleted
+		err = r.delete(request.Name, request.Namespace)
+		if err != nil {
+			log.Error(err, "Delete failed")
+			return reconcile.Result{}, err
+		}
+
+		reqLogger.Info("Reconciliation complete.")
+		return reconcile.Result{}, nil
 	}
 
 	instanceInTheDatabase := &policiesv1.Policy{}
@@ -135,4 +142,19 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 
 	return reconcile.Result{}, err
+}
+
+func (r *ReconcilePolicy) delete(name, namespace string) error {
+	reqLogger := log.WithValues("Request.Namespace", namespace, "Request.Name", name)
+	// the policy on hub was deleted, update all the matching policies in the database as deleted
+	reqLogger.Info("Policy was deleted, update the deleted field in the database...")
+
+	_, err := r.databaseConnectionPool.Exec(context.Background(),
+		`UPDATE spec.policies SET deleted = true WHERE payload -> 'metadata' ->> 'name' = $1 AND
+			     payload -> 'metadata' ->> 'namespace' = $2 AND deleted = false`, name, namespace)
+
+	if err == nil {
+		reqLogger.Info("Policy has been updated as deleted in the database...")
+	}
+	return err
 }
