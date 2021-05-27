@@ -5,12 +5,14 @@ package sync
 
 import (
 	"context"
+	"time"
 
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -20,9 +22,13 @@ import (
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/open-cluster-management/governance-policy-propagator/pkg/controller/common"
+	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller/sync/utils"
 )
 
-const controllerName string = "policy-spec-syncer"
+const (
+	controllerName = "policy-spec-syncer"
+	finalizerName  = "hub-of-hubs.open-cluster-management.io/policy-cleanup"
+)
 
 var log = logf.Log.WithName(controllerName)
 
@@ -73,14 +79,16 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling Policy...")
 
+	ctx := context.Background()
+
 	// Fetch the Policy instance
 	instance := &policiesv1.Policy{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+	err := r.client.Get(ctx, request.NamespacedName, instance)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// the policy on hub was deleted, update all the matching policies in the database as deleted
-			err = r.delete(request.Name, request.Namespace)
+			err = r.deleteFromTheDatabase(request.Name, request.Namespace)
 			if err != nil {
 				log.Error(err, "Delete failed")
 				return reconcile.Result{}, err
@@ -94,12 +102,25 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	if !instance.ObjectMeta.DeletionTimestamp.IsZero() {
+	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !utils.ContainsString(instance.GetFinalizers(), finalizerName) {
+			reqLogger.Info("Adding finalizer")
+			controllerutil.AddFinalizer(instance, finalizerName)
+			if err := r.client.Update(ctx, instance); err != nil {
+				return reconcile.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
+			}
+		}
+	} else {
 		// the policy is being deleted, update all the matching policies in the database as deleted
-		err = r.delete(request.Name, request.Namespace)
+		err = r.deleteFromTheDatabase(request.Name, request.Namespace)
 		if err != nil {
 			log.Error(err, "Delete failed")
 			return reconcile.Result{}, err
+		}
+		reqLogger.Info("Removing finalizer")
+		controllerutil.RemoveFinalizer(instance, finalizerName)
+		if err = r.client.Update(ctx, instance); err != nil {
+			return reconcile.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
 		}
 
 		reqLogger.Info("Reconciliation complete.")
@@ -141,10 +162,11 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		}
 	}
 
+	reqLogger.Info("Reconciliation complete.")
 	return reconcile.Result{}, err
 }
 
-func (r *ReconcilePolicy) delete(name, namespace string) error {
+func (r *ReconcilePolicy) deleteFromTheDatabase(name, namespace string) error {
 	reqLogger := log.WithValues("Request.Namespace", namespace, "Request.Name", name)
 	// the policy on hub was deleted, update all the matching policies in the database as deleted
 	reqLogger.Info("Policy was deleted, update the deleted field in the database...")
