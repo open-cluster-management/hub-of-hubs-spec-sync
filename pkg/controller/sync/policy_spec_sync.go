@@ -133,13 +133,14 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 
 	if err == pgx.ErrNoRows {
 		reqLogger.Info("The Policy with the current UID does not exist in the database, inserting...")
-		_, err = r.databaseConnectionPool.Exec(context.Background(),
+		_, err := r.databaseConnectionPool.Exec(context.Background(),
 			"INSERT INTO spec.policies (id,payload) values($1, $2::jsonb)", string(instance.UID), &instance)
 		if err != nil {
 			log.Error(err, "Insert failed")
+		} else {
+			reqLogger.Info("Policy has been inserted into the database...Reconciliation complete.")
 		}
-		reqLogger.Info("Policy has been inserted into the database...Reconciliation complete.")
-		return reconcile.Result{}, nil
+		return reconcile.Result{}, err
 	}
 
 	//TODO handle Template comparison later
@@ -153,10 +154,8 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 	if !common.CompareSpecAndAnnotation(instanceWithoutTemplates, instanceInTheDatabaseWithoutTemplates) {
 		reqLogger.Info("Policy mismatch between hub and the database, updating the database...")
 
-		_, err = r.databaseConnectionPool.Exec(context.Background(),
-			`UPDATE spec.policies SET payload = $1 WHERE id = $2`, &instance, string(instance.UID))
-
-		if err != nil {
+		if _, err := r.databaseConnectionPool.Exec(context.Background(),
+			`UPDATE spec.policies SET payload = $1 WHERE id = $2`, &instance, string(instance.UID)); err != nil {
 			log.Error(err, "Update failed")
 			return reconcile.Result{}, err
 		}
