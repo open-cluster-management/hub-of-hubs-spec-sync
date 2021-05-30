@@ -111,18 +111,18 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 			}
 		}
 	} else {
-		// the policy is being deleted, update all the matching policies in the database as deleted
-		err = r.deleteFromTheDatabase(request.Name, request.Namespace)
-		if err != nil {
-			log.Error(err, "Delete failed")
-			return reconcile.Result{}, err
+		if utils.ContainsString(instance.GetFinalizers(), finalizerName) {
+			// the policy is being deleted, update all the matching policies in the database as deleted
+			if err := r.deleteFromTheDatabase(request.Name, request.Namespace); err != nil {
+				log.Error(err, "Delete failed")
+				return reconcile.Result{}, err
+			}
+			reqLogger.Info("Removing finalizer")
+			controllerutil.RemoveFinalizer(instance, finalizerName)
+			if err = r.client.Update(ctx, instance); err != nil {
+				return reconcile.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
+			}
 		}
-		reqLogger.Info("Removing finalizer")
-		controllerutil.RemoveFinalizer(instance, finalizerName)
-		if err = r.client.Update(ctx, instance); err != nil {
-			return reconcile.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
-		}
-
 		reqLogger.Info("Reconciliation complete.")
 		return reconcile.Result{}, nil
 	}
