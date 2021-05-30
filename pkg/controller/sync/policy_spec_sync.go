@@ -21,7 +21,6 @@ import (
 
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/open-cluster-management/governance-policy-propagator/pkg/controller/common"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller/sync/utils"
 )
 
@@ -143,15 +142,8 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	//TODO handle Template comparison later
-	instanceWithoutTemplates := instance.DeepCopy()
-	instanceWithoutTemplates.Spec.PolicyTemplates = nil
-
-	instanceInTheDatabaseWithoutTemplates := instanceInTheDatabase.DeepCopy()
-	instanceInTheDatabaseWithoutTemplates.Spec.PolicyTemplates = nil
-
 	// found, then compare and update
-	if !common.CompareSpecAndAnnotation(instanceWithoutTemplates, instanceInTheDatabaseWithoutTemplates) {
+	if !utils.CompareInstances(instance, instanceInTheDatabase) {
 		reqLogger.Info("Policy mismatch between hub and the database, updating the database...")
 
 		if _, err := r.databaseConnectionPool.Exec(context.Background(),
