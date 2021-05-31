@@ -126,6 +126,10 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, nil
 	}
 
+	// clean the instance
+	instance.ResourceVersion = ""
+	instance.ManagedFields = nil
+
 	instanceInTheDatabase := &policiesv1.Policy{}
 	err = r.databaseConnectionPool.QueryRow(context.Background(),
 		`SELECT payload FROM spec.policies WHERE id = $1`, string(instance.UID)).Scan(&instanceInTheDatabase)
