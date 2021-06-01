@@ -129,6 +129,7 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 	// clean the instance
 	instance.ResourceVersion = ""
 	instance.ManagedFields = nil
+	instance.Finalizers = nil
 
 	instanceInTheDatabase := &policiesv1.Policy{}
 	err = r.databaseConnectionPool.QueryRow(context.Background(),
