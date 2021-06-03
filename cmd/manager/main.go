@@ -14,11 +14,9 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/cmd/manager/tool"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/apis"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/version"
@@ -28,10 +26,8 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"github.com/spf13/pflag"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
 
 // Change below variables to serve metrics on different host or port.
@@ -40,7 +36,7 @@ var (
 	metricsPort         int32 = 8384
 	operatorMetricsPort int32 = 8687
 )
-var log = logf.Log.WithName("cmd")
+var log = ctrl.Log.WithName("cmd")
 
 const (
 	environmentVariableDatabaseURL = "DATABASE_URL"
@@ -54,8 +50,6 @@ func printVersion() {
 }
 
 func main() {
-	// custom flags for the controler
-	tool.ProcessFlags()
 	// Add the zap logger flag set to the CLI. The flag set must
 	// be added before calling pflag.Parse().
 	pflag.CommandLine.AddFlagSet(zap.FlagSet())
@@ -74,7 +68,7 @@ func main() {
 	// implementing the logr.Logger interface. This logger will
 	// be propagated through the whole operator, generating
 	// uniform and structured logs.
-	logf.SetLogger(zap.Logger())
+	ctrl.SetLogger(zap.Logger())
 
 	printVersion()
 
@@ -85,27 +79,18 @@ func main() {
 	}
 
 	// Get database URL
-	if tool.Options.DatabaseURL == "" {
-		found := false
-		tool.Options.DatabaseURL, found = os.LookupEnv(environmentVariableDatabaseURL)
-		if found {
+	databaseURL, found := os.LookupEnv(environmentVariableDatabaseURL)
+	if found {
 			log.Info("Found:", "environment variable", environmentVariableDatabaseURL)
-		}
 	}
 
 	// open database
-	dbConnectionPool, err := pgxpool.Connect(context.Background(), tool.Options.DatabaseURL)
+	dbConnectionPool, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}
 	defer dbConnectionPool.Close()
-
-	hubCfg, err := clientcmd.BuildConfigFromFlags("", tool.Options.HubConfigFilePathName)
-	if err != nil {
-		log.Error(err, "")
-		os.Exit(1)
-	}
 
 	ctx := context.TODO()
 	// Become the leader before proceeding
@@ -116,7 +101,7 @@ func main() {
 	}
 
 	// Set default manager options
-	options := manager.Options{
+	options := ctrl.Options{
 		Namespace:          namespace,
 		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 	}
@@ -131,7 +116,7 @@ func main() {
 	}
 
 	// Create a new manager to provide shared dependencies and start components
-	mgr, err := manager.New(hubCfg, options)
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
@@ -154,7 +139,7 @@ func main() {
 	log.Info("Starting the Cmd.")
 
 	// Start the Cmd
-	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		log.Error(err, "Manager exited non-zero")
 		os.Exit(1)
 	}
