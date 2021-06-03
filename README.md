@@ -44,6 +44,14 @@ make build-images
 
 ## Deploy to a cluster
 
-```
-IMAGE_TAG=latest envsubst < deploy/operator.yaml.template | kubectl apply --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management -f -
-```
+1.  Create a secret with your database url:
+
+    ```
+    kubectl create secret generic hub-of-hubs-database-secret --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management --from-literal=url=$DATABASE_URL
+    ```
+
+1.  Deploy the operator:
+
+    ```
+    IMAGE_TAG=latest envsubst < deploy/operator.yaml.template | kubectl apply --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management -f -
+    ```

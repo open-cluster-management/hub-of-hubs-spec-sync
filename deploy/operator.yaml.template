@@ -22,6 +22,11 @@ spec:
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hub-of-hubs-database-secret
+                  key: url
             - name: POD_NAME
               valueFrom:
                 fieldRef:
