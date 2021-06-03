@@ -33,3 +33,17 @@ python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1])" 'YourPass
 ```
 ./build/_output/bin/hub-of-hubs-spec-syncer --kubeconfig $TOP_HUB_CONFIG
 ```
+
+## Build image
+
+Define the `REGISTRY` environment variable.
+
+```
+make build-images
+```
+
+## Deploy to a cluster
+
+```
+IMAGE_TAG=latest envsubst < deploy/operator.yaml.template | kubectl apply --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management -f -
+```
