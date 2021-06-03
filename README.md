@@ -28,6 +28,8 @@ Set the `DATABASE_URL` according to the PostgreSQL URL format: `postgres://YourU
 python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1])" 'YourPassword'
 ```
 
+`WATCH_NAMESPACE` can be defined empty so the controller will watch all the namespaces.
+
 ```
-./build/_output/bin/hub-of-hubs-spec-syncer --hub-cluster-configfile $TOP_HUB_CONFIG
+./build/_output/bin/hub-of-hubs-spec-syncer --kubeconfig $TOP_HUB_CONFIG
 ```
