@@ -2,81 +2,63 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hub-of-hubs-operator
+  name: hub-of-hubs-spec-syncer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: hub-of-hubs-operator
+      name: hub-of-hubs-spec-syncer
   template:
     metadata:
       labels:
-        name: hub-of-hubs-operator
+        name: hub-of-hubs-spec-syncer
     spec:
-      serviceAccountName: hub-of-hubs-operator
+      serviceAccountName: hub-of-hubs-spec-syncer
       containers:
-        - name: hub-of-hubs-operator
-          image: quay.io/open-cluster-management/hub-of-hubs-operator:latest-dev
+        - name: hub-of-hubs-spec-syncer
+          image: ${REGISTRY}/hub-of-hubs-spec-syncer:${IMAGE_TAG}
           command:
-          - hub-of-hubs-operator
-          args:
-            - '--hub-cluster-configfile=/var/run/klusterlet/kubeconfig'
+          - hub-of-hubs-spec-syncer
           imagePullPolicy: Always
-          volumeMounts:
-            - name: klusterlet-config
-              mountPath: /var/run/klusterlet
           env:
             - name: WATCH_NAMESPACE
-              value: managed
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "hub-of-hubs-operator"
-      volumes:
-        - name: klusterlet-config
-          secret:
-            secretName: hub-kubeconfig
-            defaultMode: 420
-
+              value: "hub-of-hubs-spec-syncer"
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: hub-of-hubs-operator
+  name: hub-of-hubs-spec-syncer
 subjects:
 - kind: ServiceAccount
-  name: hub-of-hubs-operator
-  namespace: open-cluster-management-agent-addon
+  name: hub-of-hubs-spec-syncer
+  namespace: open-cluster-management
 roleRef:
   kind: ClusterRole
-  name: hub-of-hubs-operator
+  name: hub-of-hubs-spec-syncer
   apiGroup: rbac.authorization.k8s.io
-
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: hub-of-hubs-operator
+  name: hub-of-hubs-spec-syncer
 rules:
 - apiGroups:
   - "policy.open-cluster-management.io"
   resources:
   - '*'
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - ""
   resources:
   - events
-  - namespaces
   verbs:
   - create
   - delete
@@ -85,91 +67,8 @@ rules:
   - patch
   - update
   - watch
-
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: hub-of-hubs-operator
-subjects:
-- kind: ServiceAccount
-  name: hub-of-hubs-operator
-roleRef:
-  kind: Role
-  name: hub-of-hubs-operator
-  apiGroup: rbac.authorization.k8s.io
-
----
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: hub-of-hubs-operator
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - services
-  - services/finalizers
-  - endpoints
-  - persistentvolumeclaims
-  - events
-  - configmaps
-  - secrets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  - daemonsets
-  - replicasets
-  - statefulsets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - monitoring.coreos.com
-  resources:
-  - servicemonitors
-  verbs:
-  - "get"
-  - "create"
-- apiGroups:
-  - apps
-  resources:
-  - deployments/finalizers
-  resourceNames:
-  - hub-of-hubs-operator
-  verbs:
-  - "update"
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-- apiGroups:
-  - apps
-  resources:
-  - replicasets
-  - deployments
-  verbs:
-  - get
-
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: hub-of-hubs-operator
+  name: hub-of-hubs-spec-syncer
