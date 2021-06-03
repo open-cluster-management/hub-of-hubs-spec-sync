@@ -3,7 +3,7 @@
 
 FROM golang:1.14 AS builder
 
-ENV COMPONENT=hub-of-hubs-operator
+ENV COMPONENT=hub-of-hubs-spec-syncer
 ENV REPO_PATH=/go/src/github.com/open-cluster-management/${COMPONENT}
 WORKDIR ${REPO_PATH}
 COPY . .
@@ -11,7 +11,7 @@ RUN make build
 
 # Stage 2: Copy the binaries from the image builder to the base image
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
-ENV COMPONENT=hub-of-hubs-operator
+ENV COMPONENT=hub-of-hubs-spec-syncer
 ENV REPO_PATH=/go/src/github.com/open-cluster-management/${COMPONENT}
 ENV OPERATOR=/usr/local/bin/${COMPONENT} \
     USER_UID=1001 \
