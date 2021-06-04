@@ -81,7 +81,7 @@ func main() {
 	// Get database URL
 	databaseURL, found := os.LookupEnv(environmentVariableDatabaseURL)
 	if found {
-			log.Info("Found:", "environment variable", environmentVariableDatabaseURL)
+		log.Info("Found:", "environment variable", environmentVariableDatabaseURL)
 	}
 
 	// open database
