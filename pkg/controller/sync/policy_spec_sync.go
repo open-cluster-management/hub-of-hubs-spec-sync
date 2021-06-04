@@ -29,18 +29,18 @@ var log = ctrl.Log.WithName(controllerName)
 func Add(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	return ctrl.NewControllerManagedBy(mgr).
 	       For(&policiesv1.Policy{}).
-	       Complete(&ReconcilePolicy{client: mgr.GetClient(),
+	       Complete(&PolicyReconciler{client: mgr.GetClient(),
 					 scheme: mgr.GetScheme(),
 					 databaseConnectionPool: databaseConnectionPool})
 }
 
-type ReconcilePolicy struct {
+type PolicyReconciler struct {
 	client                 client.Client
 	scheme                 *runtime.Scheme
 	databaseConnectionPool *pgxpool.Pool
 }
 
-func (r *ReconcilePolicy) Reconcile(request ctrl.Request) (ctrl.Result, error) {
+func (r *PolicyReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling Policy...")
 
@@ -128,7 +128,7 @@ func (r *ReconcilePolicy) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, err
 }
 
-func (r *ReconcilePolicy) deleteFromTheDatabase(name, namespace string) error {
+func (r *PolicyReconciler) deleteFromTheDatabase(name, namespace string) error {
 	reqLogger := log.WithValues("Request.Namespace", namespace, "Request.Name", name)
 	// the policy on hub was deleted, update all the matching policies in the database as deleted
 	reqLogger.Info("Policy was deleted, update the deleted field in the database...")
