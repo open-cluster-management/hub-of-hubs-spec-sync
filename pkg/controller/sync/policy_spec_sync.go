@@ -10,14 +10,10 @@ import (
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -29,34 +25,22 @@ const (
 	finalizerName  = "hub-of-hubs.open-cluster-management.io/policy-cleanup"
 )
 
-var log = logf.Log.WithName(controllerName)
+var log = ctrl.Log.WithName(controllerName)
 
 // Add creates a new Policy Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, databaseConnectionPool *pgxpool.Pool) error {
+func Add(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	return add(mgr, newReconciler(mgr, databaseConnectionPool))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, databaseConnectionPool *pgxpool.Pool) reconcile.Reconciler {
+func newReconciler(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) reconcile.Reconciler {
 	return &ReconcilePolicy{client: mgr.GetClient(), scheme: mgr.GetScheme(), databaseConnectionPool: databaseConnectionPool}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	// Create a new controller
-	c, err := controller.New(controllerName, mgr, controller.Options{Reconciler: r})
-	if err != nil {
-		return err
-	}
-
-	// Watch for changes to primary resource Policy
-	err = c.Watch(&source.Kind{Type: &policiesv1.Policy{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+func add(mgr ctrl.Manager, r reconcile.Reconciler) error {
+     return ctrl.NewControllerManagedBy(mgr).For(&policiesv1.Policy{}).Complete(r)
 }
 
 // blank assignment to verify that ReconcilePolicy implements reconcile.Reconciler
