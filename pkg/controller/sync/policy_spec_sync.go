@@ -13,7 +13,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -30,21 +29,12 @@ var log = ctrl.Log.WithName(controllerName)
 // Add creates a new Policy Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	return add(mgr, newReconciler(mgr, databaseConnectionPool))
+	return ctrl.NewControllerManagedBy(mgr).
+	       For(&policiesv1.Policy{}).
+	       Complete(&ReconcilePolicy{client: mgr.GetClient(),
+					 scheme: mgr.GetScheme(),
+					 databaseConnectionPool: databaseConnectionPool})
 }
-
-// newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) reconcile.Reconciler {
-	return &ReconcilePolicy{client: mgr.GetClient(), scheme: mgr.GetScheme(), databaseConnectionPool: databaseConnectionPool}
-}
-
-// add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr ctrl.Manager, r reconcile.Reconciler) error {
-     return ctrl.NewControllerManagedBy(mgr).For(&policiesv1.Policy{}).Complete(r)
-}
-
-// blank assignment to verify that ReconcilePolicy implements reconcile.Reconciler
-var _ reconcile.Reconciler = &ReconcilePolicy{}
 
 // ReconcilePolicy reconciles a Policy object
 type ReconcilePolicy struct {
@@ -58,7 +48,7 @@ type ReconcilePolicy struct {
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
-func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcilePolicy) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling Policy...")
 
@@ -74,15 +64,15 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 			err = r.deleteFromTheDatabase(request.Name, request.Namespace)
 			if err != nil {
 				log.Error(err, "Delete failed")
-				return reconcile.Result{}, err
+				return ctrl.Result{}, err
 			}
 
 			reqLogger.Info("Reconciliation complete.")
-			return reconcile.Result{}, nil
+			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
 		reqLogger.Error(err, "Failed to get policy from hub...")
-		return reconcile.Result{}, err
+		return ctrl.Result{}, err
 	}
 
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -90,7 +80,7 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 			reqLogger.Info("Adding finalizer")
 			controllerutil.AddFinalizer(instance, finalizerName)
 			if err := r.client.Update(ctx, instance); err != nil {
-				return reconcile.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
+				return ctrl.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
 			}
 		}
 	} else {
@@ -98,16 +88,16 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 			// the policy is being deleted, update all the matching policies in the database as deleted
 			if err := r.deleteFromTheDatabase(request.Name, request.Namespace); err != nil {
 				log.Error(err, "Delete failed")
-				return reconcile.Result{}, err
+				return ctrl.Result{}, err
 			}
 			reqLogger.Info("Removing finalizer")
 			controllerutil.RemoveFinalizer(instance, finalizerName)
 			if err = r.client.Update(ctx, instance); err != nil {
-				return reconcile.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
+				return ctrl.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
 			}
 		}
 		reqLogger.Info("Reconciliation complete.")
-		return reconcile.Result{}, nil
+		return ctrl.Result{}, nil
 	}
 
 	// clean the instance
@@ -128,7 +118,7 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		} else {
 			reqLogger.Info("Policy has been inserted into the database...Reconciliation complete.")
 		}
-		return reconcile.Result{}, err
+		return ctrl.Result{}, err
 	}
 
 	// found, then compare and update
@@ -138,12 +128,12 @@ func (r *ReconcilePolicy) Reconcile(request reconcile.Request) (reconcile.Result
 		if _, err := r.databaseConnectionPool.Exec(context.Background(),
 			`UPDATE spec.policies SET payload = $1 WHERE id = $2`, &instance, string(instance.UID)); err != nil {
 			log.Error(err, "Update failed")
-			return reconcile.Result{}, err
+			return ctrl.Result{}, err
 		}
 	}
 
 	reqLogger.Info("Reconciliation complete.")
-	return reconcile.Result{}, err
+	return ctrl.Result{}, err
 }
 
 func (r *ReconcilePolicy) deleteFromTheDatabase(name, namespace string) error {
