@@ -3,6 +3,7 @@ module github.com/open-cluster-management/hub-of-hubs-spec-syncer
 go 1.16
 
 require (
+	github.com/go-logr/logr v0.1.0
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/onsi/gomega v1.10.2 // indirect
 	github.com/open-cluster-management/api v0.0.0-20200610161514-939cead3902c
