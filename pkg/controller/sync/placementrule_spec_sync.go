@@ -24,11 +24,11 @@ func AddPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 }
 
 type PlacementRuleReconciler struct {
-	r genericSpecToDBReconciler
+	genericSpecToDBReconciler
 }
 
 func (r *PlacementRuleReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
-	return r.r.reconcile(request, &appsv1.PlacementRule{}, &appsv1.PlacementRule{})
+	return r.reconcile(request, &appsv1.PlacementRule{}, &appsv1.PlacementRule{})
 }
 
 func arePlacementRulesEqual(instance1, instance2 object) bool {

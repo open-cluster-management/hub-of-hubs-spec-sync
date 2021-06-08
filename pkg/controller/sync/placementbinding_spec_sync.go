@@ -24,11 +24,11 @@ func AddPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 }
 
 type PlacementBindingReconciler struct {
-	r genericSpecToDBReconciler
+	genericSpecToDBReconciler
 }
 
 func (r *PlacementBindingReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
-	return r.r.reconcile(request, &policiesv1.PlacementBinding{}, &policiesv1.PlacementBinding{})
+	return r.reconcile(request, &policiesv1.PlacementBinding{}, &policiesv1.PlacementBinding{})
 }
 
 func arePlacementBindingsEqual(instance1, instance2 object) bool {

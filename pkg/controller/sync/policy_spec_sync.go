@@ -25,11 +25,11 @@ func AddPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 }
 
 type PolicyReconciler struct {
-	r genericSpecToDBReconciler
+	genericSpecToDBReconciler
 }
 
 func (r *PolicyReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
-	return r.r.reconcile(request, &policiesv1.Policy{}, &policiesv1.Policy{})
+	return r.reconcile(request, &policiesv1.Policy{}, &policiesv1.Policy{})
 }
 
 func arePoliciesEqual(instance1, instance2 object) bool {
