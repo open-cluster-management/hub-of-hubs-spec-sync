@@ -4,12 +4,10 @@
 package sync
 
 import (
+	"github.com/jackc/pgx/v4/pgxpool"
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
 	"github.com/open-cluster-management/governance-policy-propagator/pkg/controller/common"
-
 	ctrl "sigs.k8s.io/controller-runtime"
-
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 func AddPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {

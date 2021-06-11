@@ -11,21 +11,18 @@ import (
 	"runtime"
 	"strings"
 
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-
 	"github.com/jackc/pgx/v4/pgxpool"
-
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/apis"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/version"
-
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"github.com/spf13/pflag"
+
+	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 )
