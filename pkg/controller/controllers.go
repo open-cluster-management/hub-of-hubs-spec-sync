@@ -9,32 +9,32 @@ import (
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
 // AddToScheme adds all Resources to the Scheme.
 func AddToScheme(s *runtime.Scheme) error {
-	if err := policiesv1.SchemeBuilder.AddToScheme(s); err != nil {
-		return err
-	}
+	schemeBuilders := []*scheme.Builder{policiesv1.SchemeBuilder, appsv1.SchemeBuilder}
 
-	if err := appsv1.SchemeBuilder.AddToScheme(s); err != nil {
-		return err
+	for _, schemeBuilder := range schemeBuilders {
+		if err := schemeBuilder.AddToScheme(s); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 func AddControllers(mgr ctrl.Manager, dbConnectionPool *pgxpool.Pool) error {
-	if err := addPolicyController(mgr, dbConnectionPool); err != nil {
-		return err
+	addControllerFunctions := []func(ctrl.Manager, *pgxpool.Pool) error{
+		addPolicyController,
+		addPlacementRuleController, addPlacementBindingController,
 	}
 
-	if err := addPlacementRuleController(mgr, dbConnectionPool); err != nil {
-		return err
-	}
-
-	if err := addPlacementBindingController(mgr, dbConnectionPool); err != nil {
-		return err
+	for _, addControllerFunction := range addControllerFunctions {
+		if err := addControllerFunction(mgr, dbConnectionPool); err != nil {
+			return err
+		}
 	}
 
 	return nil
