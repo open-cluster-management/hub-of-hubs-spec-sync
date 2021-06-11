@@ -5,13 +5,14 @@ package sync
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -41,7 +42,7 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 	err := r.client.Get(ctx, request.NamespacedName, instance)
 
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			// the instance on hub was deleted, update all the matching instances in the database as deleted
 			err = r.deleteFromTheDatabase(request.Name, request.Namespace)
 			if err != nil {
@@ -92,7 +93,7 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 		fmt.Sprintf("SELECT payload FROM spec.%s WHERE id = $1", r.tableName),
 		string(instanceID)).Scan(&instanceInTheDatabase)
 
-	if err == pgx.ErrNoRows {
+	if errors.Is(err,pgx.ErrNoRows) {
 		reqLogger.Info("The instance with the current UID does not exist in the database, inserting...")
 		_, err := r.databaseConnectionPool.Exec(ctx,
 			fmt.Sprintf("INSERT INTO spec.%s (id,payload) values($1, $2::jsonb)", r.tableName),
