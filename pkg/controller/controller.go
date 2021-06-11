@@ -18,5 +18,6 @@ func AddToManager(m manager.Manager, databaseConnectionPool *pgxpool.Pool) error
 			return err
 		}
 	}
+
 	return nil
 }

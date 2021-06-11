@@ -35,7 +35,7 @@ func arePlacementRulesEqual(instance1, instance2 object) bool {
 
 	placementRule1 := instance1.(*appsv1.PlacementRule)
 	placementRule2 := instance2.(*appsv1.PlacementRule)
-
 	specMatch := equality.Semantic.DeepEqual(placementRule1.Spec, placementRule2.Spec)
+
 	return annotationMatch && specMatch
 }

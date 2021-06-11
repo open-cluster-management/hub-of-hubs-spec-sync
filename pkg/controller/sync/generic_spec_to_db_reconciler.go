@@ -50,10 +50,12 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 			}
 
 			reqLogger.Info("Reconciliation complete.")
+
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
 		reqLogger.Error(err, "Failed to get the instance from hub...")
+
 		return ctrl.Result{}, err
 	}
 
@@ -100,6 +102,7 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 		} else {
 			reqLogger.Info("The instance has been inserted into the database...Reconciliation complete.")
 		}
+
 		return ctrl.Result{}, err
 	}
 
@@ -117,6 +120,7 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 	}
 
 	reqLogger.Info("Reconciliation complete.")
+
 	return ctrl.Result{}, err
 }
 
@@ -144,6 +148,7 @@ func (r *genericSpecToDBReconciler) deleteFromTheDatabase(name, namespace string
 	if err == nil {
 		reqLogger.Info("Instance has been updated as deleted in the database...")
 	}
+
 	return err
 }
 
@@ -154,5 +159,6 @@ func containsString(slice []string, s string) bool {
 			return true
 		}
 	}
+
 	return false
 }
