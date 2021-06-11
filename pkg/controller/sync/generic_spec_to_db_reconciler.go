@@ -34,6 +34,8 @@ type object interface {
 	runtime.Object
 }
 
+const requeuePeriodSeconds = 5
+
 func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, instanceInTheDatabase object) (ctrl.Result, error) {
 	reqLogger := r.log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info(fmt.Sprintf("Reconciling %s ...", r.tableName))
@@ -66,7 +68,7 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 			reqLogger.Info("Adding finalizer")
 			controllerutil.AddFinalizer(instance, r.finalizerName)
 			if err := r.client.Update(ctx, instance); err != nil {
-				return ctrl.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
+				return ctrl.Result{Requeue: true, RequeueAfter: requeuePeriodSeconds * time.Second}, err
 			}
 		}
 	} else {
@@ -79,7 +81,7 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 			reqLogger.Info("Removing finalizer")
 			controllerutil.RemoveFinalizer(instance, r.finalizerName)
 			if err = r.client.Update(ctx, instance); err != nil {
-				return ctrl.Result{Requeue: true, RequeueAfter: 5 * time.Second}, err
+				return ctrl.Result{Requeue: true, RequeueAfter: requeuePeriodSeconds * time.Second}, err
 			}
 		}
 		reqLogger.Info("Reconciliation complete.")
