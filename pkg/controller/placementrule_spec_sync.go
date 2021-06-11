@@ -13,22 +13,15 @@ import (
 func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1.PlacementRule{}).
-		Complete(&placementRuleReconciler{genericSpecToDBReconciler{
+		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("placementrule-spec-syncer"),
 			tableName:              "placementrules",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementrule-cleanup",
+			createInstance:         func() object { return &appsv1.PlacementRule{} },
 			areEqual:               arePlacementRulesEqual,
-		}})
-}
-
-type placementRuleReconciler struct {
-	genericSpecToDBReconciler
-}
-
-func (r *placementRuleReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
-	return r.reconcile(request, &appsv1.PlacementRule{}, &appsv1.PlacementRule{})
+		})
 }
 
 func arePlacementRulesEqual(instance1, instance2 object) bool {

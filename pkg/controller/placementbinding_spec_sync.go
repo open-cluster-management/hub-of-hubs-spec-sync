@@ -13,22 +13,15 @@ import (
 func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.PlacementBinding{}).
-		Complete(&placementBindingReconciler{genericSpecToDBReconciler{
+		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("placementbinding-spec-syncer"),
 			tableName:              "placementbindings",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementbinding-cleanup",
+			createInstance:         func() object { return &policiesv1.PlacementBinding{} },
 			areEqual:               arePlacementBindingsEqual,
-		}})
-}
-
-type placementBindingReconciler struct {
-	genericSpecToDBReconciler
-}
-
-func (r *placementBindingReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
-	return r.reconcile(request, &policiesv1.PlacementBinding{}, &policiesv1.PlacementBinding{})
+		})
 }
 
 func arePlacementBindingsEqual(instance1, instance2 object) bool {

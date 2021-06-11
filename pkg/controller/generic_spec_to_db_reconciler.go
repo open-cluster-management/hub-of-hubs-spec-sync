@@ -26,6 +26,7 @@ type genericSpecToDBReconciler struct {
 	databaseConnectionPool *pgxpool.Pool
 	tableName              string
 	finalizerName          string
+	createInstance         func() object
 	areEqual               func(instance1, instance2 object) bool
 }
 
@@ -36,11 +37,13 @@ type object interface {
 
 const requeuePeriodSeconds = 5
 
-func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, instanceInTheDatabase object) (ctrl.Result, error) {
+func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := r.log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info(fmt.Sprintf("Reconciling %s ...", r.tableName))
 
 	ctx := context.Background()
+
+	instance := r.createInstance()
 	err := r.client.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -90,6 +93,7 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 
 	cleanInstance(instance)
 
+	instanceInTheDatabase := r.createInstance()
 	err = r.databaseConnectionPool.QueryRow(ctx,
 		fmt.Sprintf("SELECT payload FROM spec.%s WHERE id = $1", r.tableName),
 		string(instanceID)).Scan(&instanceInTheDatabase)

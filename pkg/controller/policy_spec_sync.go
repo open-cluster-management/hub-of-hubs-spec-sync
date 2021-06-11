@@ -13,22 +13,15 @@ import (
 func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.Policy{}).
-		Complete(&policyReconciler{genericSpecToDBReconciler{
+		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("policy-spec-syncer"),
 			tableName:              "policies",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/policy-cleanup",
+			createInstance:         func() object { return &policiesv1.Policy{} },
 			areEqual:               arePoliciesEqual,
-		}})
-}
-
-type policyReconciler struct {
-	genericSpecToDBReconciler
-}
-
-func (r *policyReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
-	return r.reconcile(request, &policiesv1.Policy{}, &policiesv1.Policy{})
+		})
 }
 
 func arePoliciesEqual(instance1, instance2 object) bool {
