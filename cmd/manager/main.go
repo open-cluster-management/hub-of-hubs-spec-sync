@@ -14,7 +14,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/apis"
-	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller/sync"
+	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/version"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
@@ -126,17 +126,17 @@ func doMain() int {
 	}
 
 	// Setup all Controllers
-	if err := sync.AddPolicyController(mgr, dbConnectionPool); err != nil {
+	if err := controller.AddPolicyController(mgr, dbConnectionPool); err != nil {
 		log.Error(err, "")
 		return 1
 	}
 
-	if err := sync.AddPlacementRuleController(mgr, dbConnectionPool); err != nil {
+	if err := controller.AddPlacementRuleController(mgr, dbConnectionPool); err != nil {
 		log.Error(err, "")
 		return 1
 	}
 
-	if err := sync.AddPlacementBindingController(mgr, dbConnectionPool); err != nil {
+	if err := controller.AddPlacementBindingController(mgr, dbConnectionPool); err != nil {
 		log.Error(err, "")
 		return 1
 	}
