@@ -34,7 +34,7 @@ func arePoliciesEqual(instance1, instance2 object) bool {
 	policy1 := instance1.(*policiesv1.Policy)
 	policy2 := instance2.(*policiesv1.Policy)
 
-	//TODO handle Template comparison later
+	// TODO handle Template comparison later
 	policy1WithoutTemplates := policy1.DeepCopy()
 	policy1WithoutTemplates.Spec.PolicyTemplates = nil
 
