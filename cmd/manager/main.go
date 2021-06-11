@@ -27,16 +27,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
-// Change below variables to serve metrics on different host or port.
-var (
-	metricsHost       = "0.0.0.0"
-	metricsPort int32 = 8384
-)
-var log = ctrl.Log.WithName("cmd")
-
 const (
-	environmentVariableDatabaseURL = "DATABASE_URL"
+	metricsHost                          = "0.0.0.0"
+	metricsPort                    int32 = 8384
+	environmentVariableDatabaseURL       = "DATABASE_URL"
 )
+
+var log = ctrl.Log.WithName("cmd")
 
 func printVersion() {
 	log.Info(fmt.Sprintf("Operator Version: %s", version.Version))
@@ -45,7 +42,8 @@ func printVersion() {
 	log.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
 }
 
-func main() {
+// function to handle defers with exit, see https://stackoverflow.com/a/27629493/553720.
+func doMain() int {
 	// Add the zap logger flag set to the CLI. The flag set must
 	// be added before calling pflag.Parse().
 	pflag.CommandLine.AddFlagSet(zap.FlagSet())
@@ -71,7 +69,7 @@ func main() {
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
 		log.Error(err, "Failed to get watch namespace")
-		os.Exit(1)
+		return 1
 	}
 
 	// Get database URL
@@ -84,7 +82,7 @@ func main() {
 	dbConnectionPool, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
 		log.Error(err, "")
-		os.Exit(1)
+		return 1
 	}
 	defer dbConnectionPool.Close()
 
@@ -93,7 +91,7 @@ func main() {
 	err = leader.Become(ctx, "hub-of-hubs-spec-syncer-lock")
 	if err != nil {
 		log.Error(err, "")
-		os.Exit(1)
+		return 1
 	}
 
 	// Set default manager options
@@ -115,7 +113,7 @@ func main() {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		log.Error(err, "")
-		os.Exit(1)
+		return 1
 	}
 
 	log.Info("Registering Components.")
@@ -123,13 +121,13 @@ func main() {
 	// Setup Scheme for all resources
 	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
 		log.Error(err, "")
-		os.Exit(1)
+		return 1
 	}
 
 	// Setup all Controllers
 	if err := controller.AddToManager(mgr, dbConnectionPool); err != nil {
 		log.Error(err, "")
-		os.Exit(1)
+		return 1
 	}
 
 	log.Info("Starting the Cmd.")
@@ -137,6 +135,12 @@ func main() {
 	// Start the Cmd
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		log.Error(err, "Manager exited non-zero")
-		os.Exit(1)
+		return 1
 	}
+
+	return 0
+}
+
+func main() {
+	os.Exit(doMain())
 }
