@@ -85,6 +85,7 @@ func doMain() int {
 	}
 
 	log.Info("Starting the Cmd.")
+
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		log.Error(err, "Manager exited non-zero")
 		return 1
@@ -115,7 +116,6 @@ func createManager(namespace, metricsHost string, metricsPort int32, dbConnectio
 		return nil, err
 	}
 
-	log.Info("Registering Components.")
 	if err := controller.AddToScheme(mgr.GetScheme()); err != nil {
 		log.Error(err, "")
 		return nil, err

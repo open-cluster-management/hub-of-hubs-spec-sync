@@ -42,6 +42,7 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 	reqLogger.Info(fmt.Sprintf("Reconciling %s ...", r.tableName))
 
 	ctx := context.Background()
+
 	instance, err := r.processCR(ctx, request, reqLogger)
 	if err != nil {
 		return ctrl.Result{Requeue: true, RequeueAfter: requeuePeriodSeconds * time.Second}, err
@@ -77,19 +78,19 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.Request,
 	log logr.Logger) (object, error) {
 	instance := r.createInstance()
-	err := r.client.Get(ctx, request.NamespacedName, instance)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			// the instance on hub was deleted, update all the matching instances in the database as deleted
-			err = r.deleteFromTheDatabase(request.Name, request.Namespace, log)
-			if err != nil {
-				log.Error(err, "Delete failed")
-				return nil, err
-			}
 
-			return nil, nil
+	err := r.client.Get(ctx, request.NamespacedName, instance)
+	if apierrors.IsNotFound(err) {
+		// the instance on hub was deleted, update all the matching instances in the database as deleted
+		err = r.deleteFromTheDatabase(request.Name, request.Namespace, log)
+		if err != nil {
+			log.Error(err, "Delete failed")
 		}
 
+		return nil, err
+	}
+
+	if err != nil {
 		log.Error(err, "Failed to get the instance from hub...")
 		return nil, err
 	}
@@ -106,34 +107,31 @@ func isInstanceBeingDeleted(instance object) bool {
 }
 
 func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context, instance object,
-	log logr.Logger) error {
+	log logr.Logger) (err error) {
 	if containsString(instance.GetFinalizers(), r.finalizerName) {
 		// the policy is being deleted, update all the matching policies in the database as deleted
-		if err := r.deleteFromTheDatabase(instance.GetName(), instance.GetNamespace(), log); err != nil {
+		if err = r.deleteFromTheDatabase(instance.GetName(), instance.GetNamespace(), log); err != nil {
 			log.Error(err, "Delete failed")
 			return err
 		}
+
 		log.Info("Removing finalizer")
 		controllerutil.RemoveFinalizer(instance, r.finalizerName)
-		if err := r.client.Update(ctx, instance); err != nil {
-			return err
-		}
+		err = r.client.Update(ctx, instance)
 	}
 
-	return nil
+	return err
 }
 
 func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance object,
-	log logr.Logger) error {
+	log logr.Logger) (err error) {
 	if !containsString(instance.GetFinalizers(), r.finalizerName) {
 		log.Info("Adding finalizer")
 		controllerutil.AddFinalizer(instance, r.finalizerName)
-		if err := r.client.Update(ctx, instance); err != nil {
-			return err
-		}
+		err = r.client.Update(ctx, instance)
 	}
 
-	return nil
+	return err
 }
 
 func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Context, instance object,
@@ -145,9 +143,11 @@ func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Con
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		log.Info("The instance with the current UID does not exist in the database, inserting...")
+
 		_, err := r.databaseConnectionPool.Exec(ctx,
 			fmt.Sprintf("INSERT INTO spec.%s (id,payload) values($1, $2::jsonb)", r.tableName),
 			string(instance.GetUID()), &instance)
+
 		if err != nil {
 			log.Error(err, "Insert failed")
 		} else {
