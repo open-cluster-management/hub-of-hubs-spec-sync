@@ -31,7 +31,6 @@ import (
 var (
 	metricsHost               = "0.0.0.0"
 	metricsPort         int32 = 8384
-	operatorMetricsPort int32 = 8687
 )
 var log = ctrl.Log.WithName("cmd")
 
