@@ -10,10 +10,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-func AddPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
+func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.PlacementBinding{}).
-		Complete(&PlacementBindingReconciler{genericSpecToDBReconciler{
+		Complete(&placementBindingReconciler{genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("placementbinding-spec-syncer"),
@@ -23,11 +23,11 @@ func AddPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 		}})
 }
 
-type PlacementBindingReconciler struct {
+type placementBindingReconciler struct {
 	genericSpecToDBReconciler
 }
 
-func (r *PlacementBindingReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
+func (r *placementBindingReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	return r.reconcile(request, &policiesv1.PlacementBinding{}, &policiesv1.PlacementBinding{})
 }
 

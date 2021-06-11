@@ -10,10 +10,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-func AddPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
+func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1.PlacementRule{}).
-		Complete(&PlacementRuleReconciler{genericSpecToDBReconciler{
+		Complete(&placementRuleReconciler{genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("placementrule-spec-syncer"),
@@ -23,11 +23,11 @@ func AddPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 		}})
 }
 
-type PlacementRuleReconciler struct {
+type placementRuleReconciler struct {
 	genericSpecToDBReconciler
 }
 
-func (r *PlacementRuleReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
+func (r *placementRuleReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	return r.reconcile(request, &appsv1.PlacementRule{}, &appsv1.PlacementRule{})
 }
 

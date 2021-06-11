@@ -109,7 +109,6 @@ func doMain() int {
 		options.NewCache = cache.MultiNamespacedCacheBuilder(strings.Split(namespace, ","))
 	}
 
-	// Create a new manager to provide shared dependencies and start components
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		log.Error(err, "")
@@ -117,25 +116,12 @@ func doMain() int {
 	}
 
 	log.Info("Registering Components.")
-
-	// Setup Scheme for all resources
 	if err := controller.AddToScheme(mgr.GetScheme()); err != nil {
 		log.Error(err, "")
 		return 1
 	}
 
-	// Setup all Controllers
-	if err := controller.AddPolicyController(mgr, dbConnectionPool); err != nil {
-		log.Error(err, "")
-		return 1
-	}
-
-	if err := controller.AddPlacementRuleController(mgr, dbConnectionPool); err != nil {
-		log.Error(err, "")
-		return 1
-	}
-
-	if err := controller.AddPlacementBindingController(mgr, dbConnectionPool); err != nil {
+	if err := controller.AddControllers(mgr, dbConnectionPool); err != nil {
 		log.Error(err, "")
 		return 1
 	}

@@ -10,10 +10,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-func AddPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
+func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.Policy{}).
-		Complete(&PolicyReconciler{genericSpecToDBReconciler{
+		Complete(&policyReconciler{genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("policy-spec-syncer"),
@@ -23,11 +23,11 @@ func AddPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 		}})
 }
 
-type PolicyReconciler struct {
+type policyReconciler struct {
 	genericSpecToDBReconciler
 }
 
-func (r *PolicyReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
+func (r *policyReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	return r.reconcile(request, &policiesv1.Policy{}, &policiesv1.Policy{})
 }
 
