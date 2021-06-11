@@ -88,7 +88,6 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 			}
 
 			log.Info("Reconciliation complete.")
-
 			return nil, nil
 		}
 
@@ -96,31 +95,42 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 		return nil, err
 	}
 
-	if instance.GetDeletionTimestamp().IsZero() {
-		if !containsString(instance.GetFinalizers(), r.finalizerName) {
-			log.Info("Adding finalizer")
-			controllerutil.AddFinalizer(instance, r.finalizerName)
-			if err := r.client.Update(ctx, instance); err != nil {
-				return instance, err
-			}
-		}
-	} else {
-		if containsString(instance.GetFinalizers(), r.finalizerName) {
-			// the policy is being deleted, update all the matching policies in the database as deleted
-			if err := r.deleteFromTheDatabase(request.Name, request.Namespace, log); err != nil {
-				log.Error(err, "Delete failed")
-				return nil, err
-			}
-			log.Info("Removing finalizer")
-			controllerutil.RemoveFinalizer(instance, r.finalizerName)
-			if err = r.client.Update(ctx, instance); err != nil {
-				return nil, err
-			}
-		}
-		return nil, nil
+	if !instance.GetDeletionTimestamp().IsZero() {
+		return nil, r.removeFinalizerAndDelete(ctx, instance, log)
 	}
 
-	return cleanInstance(instance), nil
+	return cleanInstance(instance), r.addFinalizer(ctx, instance, log)
+}
+
+func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context, instance object,
+	log logr.Logger) error {
+	if containsString(instance.GetFinalizers(), r.finalizerName) {
+		// the policy is being deleted, update all the matching policies in the database as deleted
+		if err := r.deleteFromTheDatabase(instance.GetName(), instance.GetNamespace(), log); err != nil {
+			log.Error(err, "Delete failed")
+			return err
+		}
+		log.Info("Removing finalizer")
+		controllerutil.RemoveFinalizer(instance, r.finalizerName)
+		if err := r.client.Update(ctx, instance); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance object,
+	log logr.Logger) error {
+	if !containsString(instance.GetFinalizers(), r.finalizerName) {
+		log.Info("Adding finalizer")
+		controllerutil.AddFinalizer(instance, r.finalizerName)
+		if err := r.client.Update(ctx, instance); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Context, instance object,
