@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/go-logr/logr"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/apis"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller"
@@ -33,9 +34,7 @@ const (
 	environmentVariableDatabaseURL       = "DATABASE_URL"
 )
 
-var log = ctrl.Log.WithName("cmd")
-
-func printVersion() {
+func printVersion(log logr.Logger) {
 	log.Info(fmt.Sprintf("Operator Version: %s", version.Version))
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
@@ -44,6 +43,8 @@ func printVersion() {
 
 // function to handle defers with exit, see https://stackoverflow.com/a/27629493/553720.
 func doMain() int {
+	log := ctrl.Log.WithName("cmd")
+
 	// Add the zap logger flag set to the CLI. The flag set must
 	// be added before calling pflag.Parse().
 	pflag.CommandLine.AddFlagSet(zap.FlagSet())
@@ -64,7 +65,7 @@ func doMain() int {
 	// uniform and structured logs.
 	ctrl.SetLogger(zap.Logger())
 
-	printVersion()
+	printVersion(log)
 
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
