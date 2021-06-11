@@ -87,7 +87,6 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 				return nil, err
 			}
 
-			log.Info("Reconciliation complete.")
 			return nil, nil
 		}
 
@@ -95,11 +94,15 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 		return nil, err
 	}
 
-	if !instance.GetDeletionTimestamp().IsZero() {
+	if isInstanceBeingDeleted(instance) {
 		return nil, r.removeFinalizerAndDelete(ctx, instance, log)
 	}
 
 	return cleanInstance(instance), r.addFinalizer(ctx, instance, log)
+}
+
+func isInstanceBeingDeleted(instance object) bool {
+	return !instance.GetDeletionTimestamp().IsZero()
 }
 
 func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context, instance object,
