@@ -87,12 +87,14 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 	cleanInstance(instance)
 
 	err = r.databaseConnectionPool.QueryRow(ctx,
-		fmt.Sprintf("SELECT payload FROM spec.%s WHERE id = $1", r.tableName), string(instanceID)).Scan(&instanceInTheDatabase)
+		fmt.Sprintf("SELECT payload FROM spec.%s WHERE id = $1", r.tableName),
+		string(instanceID)).Scan(&instanceInTheDatabase)
 
 	if err == pgx.ErrNoRows {
 		reqLogger.Info("The instance with the current UID does not exist in the database, inserting...")
 		_, err := r.databaseConnectionPool.Exec(ctx,
-			fmt.Sprintf("INSERT INTO spec.%s (id,payload) values($1, $2::jsonb)", r.tableName), string(instanceID), &instance)
+			fmt.Sprintf("INSERT INTO spec.%s (id,payload) values($1, $2::jsonb)", r.tableName),
+			string(instanceID), &instance)
 		if err != nil {
 			reqLogger.Error(err, "Insert failed")
 		} else {
@@ -104,8 +106,11 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 	if !r.areEqual(instance, instanceInTheDatabase) {
 		reqLogger.Info("Mismatch between hub and the database, updating the database...")
 
-		if _, err := r.databaseConnectionPool.Exec(context.Background(),
-			fmt.Sprintf("UPDATE spec.%s SET payload = $1 WHERE id = $2", r.tableName), &instance, string(instanceID)); err != nil {
+		_, err := r.databaseConnectionPool.Exec(ctx,
+			fmt.Sprintf("UPDATE spec.%s SET payload = $1 WHERE id = $2", r.tableName),
+			&instance, string(instanceID))
+
+		if err != nil {
 			reqLogger.Error(err, "Update failed")
 			return ctrl.Result{}, err
 		}
