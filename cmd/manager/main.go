@@ -42,27 +42,12 @@ func printVersion(log logr.Logger) {
 
 // function to handle defers with exit, see https://stackoverflow.com/a/27629493/553720.
 func doMain() int {
-	log := ctrl.Log.WithName("cmd")
-
-	// Add the zap logger flag set to the CLI. The flag set must
-	// be added before calling pflag.Parse().
 	pflag.CommandLine.AddFlagSet(zap.FlagSet())
-
-	// Add flags registered by imported packages (e.g. glog and
-	// controller-runtime)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-
 	pflag.Parse()
 
-	// Use a zap logr.Logger implementation. If none of the zap
-	// flags are configured (or if the zap flag set is not being
-	// used), this defaults to a production zap logger.
-	//
-	// The logger instantiated here can be changed to any logger
-	// implementing the logr.Logger interface. This logger will
-	// be propagated through the whole operator, generating
-	// uniform and structured logs.
 	ctrl.SetLogger(zap.Logger())
+	log := ctrl.Log.WithName("cmd")
 
 	printVersion(log)
 
@@ -94,7 +79,22 @@ func doMain() int {
 		return 1
 	}
 
-	// Set default manager options
+	mgr, err := createManager(namespace, metricsHost, metricsPort, dbConnectionPool, log)
+	if err != nil {
+		return 1
+	}
+
+	log.Info("Starting the Cmd.")
+	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+		log.Error(err, "Manager exited non-zero")
+		return 1
+	}
+
+	return 0
+}
+
+func createManager(namespace, metricsHost string, metricsPort int32, dbConnectionPool *pgxpool.Pool,
+	log logr.Logger) (ctrl.Manager, error) {
 	options := ctrl.Options{
 		Namespace:          namespace,
 		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
@@ -112,29 +112,21 @@ func doMain() int {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
 		log.Error(err, "")
-		return 1
+		return nil, err
 	}
 
 	log.Info("Registering Components.")
 	if err := controller.AddToScheme(mgr.GetScheme()); err != nil {
 		log.Error(err, "")
-		return 1
+		return nil, err
 	}
 
 	if err := controller.AddControllers(mgr, dbConnectionPool); err != nil {
 		log.Error(err, "")
-		return 1
+		return nil, err
 	}
 
-	log.Info("Starting the Cmd.")
-
-	// Start the Cmd
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		log.Error(err, "Manager exited non-zero")
-		return 1
-	}
-
-	return 0
+	return mgr, nil
 }
 
 func main() {
