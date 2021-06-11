@@ -13,7 +13,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/apis"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/version"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
@@ -120,7 +119,7 @@ func doMain() int {
 	log.Info("Registering Components.")
 
 	// Setup Scheme for all resources
-	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
+	if err := controller.AddToScheme(mgr.GetScheme()); err != nil {
 		log.Error(err, "")
 		return 1
 	}
