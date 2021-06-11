@@ -19,7 +19,8 @@ func AddPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 			log:                    ctrl.Log.WithName("placementrule-spec-syncer"),
 			tableName:              "placementrules",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementrule-cleanup",
-			areEqual:               arePlacementRulesEqual}})
+			areEqual:               arePlacementRulesEqual,
+		}})
 }
 
 type PlacementRuleReconciler struct {

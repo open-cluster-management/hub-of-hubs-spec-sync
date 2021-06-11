@@ -40,7 +40,6 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 
 	ctx := context.Background()
 	err := r.client.Get(ctx, request.NamespacedName, instance)
-
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			// the instance on hub was deleted, update all the matching instances in the database as deleted
@@ -93,7 +92,7 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 		fmt.Sprintf("SELECT payload FROM spec.%s WHERE id = $1", r.tableName),
 		string(instanceID)).Scan(&instanceInTheDatabase)
 
-	if errors.Is(err,pgx.ErrNoRows) {
+	if errors.Is(err, pgx.ErrNoRows) {
 		reqLogger.Info("The instance with the current UID does not exist in the database, inserting...")
 		_, err := r.databaseConnectionPool.Exec(ctx,
 			fmt.Sprintf("INSERT INTO spec.%s (id,payload) values($1, $2::jsonb)", r.tableName),
@@ -113,7 +112,6 @@ func (r *genericSpecToDBReconciler) reconcile(request ctrl.Request, instance, in
 		_, err := r.databaseConnectionPool.Exec(ctx,
 			fmt.Sprintf("UPDATE spec.%s SET payload = $1 WHERE id = $2", r.tableName),
 			&instance, string(instanceID))
-
 		if err != nil {
 			reqLogger.Error(err, "Update failed")
 			return ctrl.Result{}, err

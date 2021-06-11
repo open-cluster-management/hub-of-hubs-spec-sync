@@ -19,7 +19,8 @@ func AddPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 			log:                    ctrl.Log.WithName("placementbinding-spec-syncer"),
 			tableName:              "placementbindings",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementbinding-cleanup",
-			areEqual:               arePlacementBindingsEqual}})
+			areEqual:               arePlacementBindingsEqual,
+		}})
 }
 
 type PlacementBindingReconciler struct {

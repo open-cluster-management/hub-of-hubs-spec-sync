@@ -19,7 +19,8 @@ func AddPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 			log:                    ctrl.Log.WithName("policy-spec-syncer"),
 			tableName:              "policies",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/policy-cleanup",
-			areEqual:               arePoliciesEqual}})
+			areEqual:               arePoliciesEqual,
+		}})
 }
 
 type PolicyReconciler struct {
