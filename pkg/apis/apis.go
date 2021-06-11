@@ -20,6 +20,7 @@ func AddToScheme(s *runtime.Scheme) error {
 	if err := clusterv1.AddToScheme(s); err != nil {
 		return err
 	}
+
 	// add policy scheme
 	policySchemeBuilder := runtime.NewSchemeBuilder(addKnownTypes)
 	if err := policySchemeBuilder.AddToScheme(s); err != nil {
@@ -29,6 +30,7 @@ func AddToScheme(s *runtime.Scheme) error {
 	if err := appsv1.SchemeBuilder.AddToScheme(s); err != nil {
 		return err
 	}
+
 	return AddToSchemes.AddToScheme(s)
 }
 
@@ -41,5 +43,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&policiesv1.PlacementBindingList{},
 	)
 	metav1.AddToGroupVersion(scheme, policiesv1.SchemeGroupVersion)
+
 	return nil
 }
