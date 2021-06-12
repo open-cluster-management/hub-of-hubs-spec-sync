@@ -45,27 +45,31 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 
 	instance, err := r.processCR(ctx, request, reqLogger)
 	if err != nil {
+		reqLogger.Info("Reconciliation failed: %v", err)
 		return ctrl.Result{Requeue: true, RequeueAfter: requeuePeriodSeconds * time.Second}, err
 	}
 
 	if instance == nil {
 		reqLogger.Info("Reconciliation complete.")
-		return ctrl.Result{}, err
+		return ctrl.Result{}, nil
 	}
 
 	instanceInTheDatabase, err := r.processInstanceInTheDatabase(ctx, instance, reqLogger)
 	if err != nil {
+		reqLogger.Error(err, "Reconciliation failed")
 		return ctrl.Result{Requeue: true, RequeueAfter: requeuePeriodSeconds * time.Second}, err
 	}
 
 	if !r.areEqual(instance, instanceInTheDatabase) {
-		reqLogger.Info("Mismatch between hub and the database, updating the database...")
+		reqLogger.Info("Mismatch between hub and the database, updating the database")
 
 		_, err := r.databaseConnectionPool.Exec(ctx,
 			fmt.Sprintf("UPDATE spec.%s SET payload = $1 WHERE id = $2", r.tableName),
 			&instance, string(instance.GetUID()))
 		if err != nil {
-			reqLogger.Error(err, "Update failed")
+			err = fmt.Errorf("failed to update the database with new value: %w", err)
+			reqLogger.Error(err, "Reconciliation failed")
+
 			return ctrl.Result{}, err
 		}
 	}
@@ -82,17 +86,11 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 	err := r.client.Get(ctx, request.NamespacedName, instance)
 	if apierrors.IsNotFound(err) {
 		// the instance on hub was deleted, update all the matching instances in the database as deleted
-		err = r.deleteFromTheDatabase(request.Name, request.Namespace, log)
-		if err != nil {
-			log.Error(err, "Delete failed")
-		}
-
-		return nil, err
+		return nil, r.deleteFromTheDatabase(request.Name, request.Namespace, log)
 	}
 
 	if err != nil {
-		log.Error(err, "Failed to get the instance from hub...")
-		return nil, err
+		return nil, fmt.Errorf("failed to get the instance from hub: %w", err)
 	}
 
 	if isInstanceBeingDeleted(instance) {
@@ -107,31 +105,41 @@ func isInstanceBeingDeleted(instance object) bool {
 }
 
 func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context, instance object,
-	log logr.Logger) (err error) {
-	if containsString(instance.GetFinalizers(), r.finalizerName) {
-		// the policy is being deleted, update all the matching policies in the database as deleted
-		if err = r.deleteFromTheDatabase(instance.GetName(), instance.GetNamespace(), log); err != nil {
-			log.Error(err, "Delete failed")
-			return err
-		}
-
-		log.Info("Removing finalizer")
-		controllerutil.RemoveFinalizer(instance, r.finalizerName)
-		err = r.client.Update(ctx, instance)
+	log logr.Logger) error {
+	if !containsString(instance.GetFinalizers(), r.finalizerName) {
+		return nil
 	}
 
-	return err
+	log.Info("Removing an instance from the database")
+
+	// the policy is being deleted, update all the matching policies in the database as deleted
+	if err := r.deleteFromTheDatabase(instance.GetName(), instance.GetNamespace(), log); err != nil {
+		return fmt.Errorf("failed to delete an instance from the database: %w", err)
+	}
+
+	log.Info("Removing finalizer")
+	controllerutil.RemoveFinalizer(instance, r.finalizerName)
+
+	if err := r.client.Update(ctx, instance); err != nil {
+		return fmt.Errorf("failed to remove a finalizer: %w", err)
+	}
+
+	return nil
 }
 
-func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance object,
-	log logr.Logger) (err error) {
-	if !containsString(instance.GetFinalizers(), r.finalizerName) {
-		log.Info("Adding finalizer")
-		controllerutil.AddFinalizer(instance, r.finalizerName)
-		err = r.client.Update(ctx, instance)
+func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance object, log logr.Logger) error {
+	if containsString(instance.GetFinalizers(), r.finalizerName) {
+		return nil
 	}
 
-	return err
+	log.Info("Adding finalizer")
+	controllerutil.AddFinalizer(instance, r.finalizerName)
+
+	if err := r.client.Update(ctx, instance); err != nil {
+		return fmt.Errorf("failed to add a finalizer: %w", err)
+	}
+
+	return nil
 }
 
 func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Context, instance object,
@@ -147,14 +155,17 @@ func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Con
 		_, err := r.databaseConnectionPool.Exec(ctx,
 			fmt.Sprintf("INSERT INTO spec.%s (id,payload) values($1, $2::jsonb)", r.tableName),
 			string(instance.GetUID()), &instance)
-
 		if err != nil {
-			log.Error(err, "Insert failed")
-		} else {
-			log.Info("The instance has been inserted into the database...Reconciliation complete.")
+			return nil, fmt.Errorf("insert into database failed: %w", err)
 		}
 
-		return instance, err
+		log.Info("The instance has been inserted into the database")
+
+		return instance, nil // the instance in the database is identical to the instance we just inserted
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get the instance in the database: %w", err)
 	}
 
 	return instanceInTheDatabase, nil
@@ -175,18 +186,18 @@ func cleanInstance(instance object) object {
 }
 
 func (r *genericSpecToDBReconciler) deleteFromTheDatabase(name, namespace string, log logr.Logger) error {
-	// the policy on hub was deleted, update all the matching policies in the database as deleted
-	log.Info("Instance was deleted, update the deleted field in the database...")
+	log.Info("Instance was deleted, update the deleted field in the database")
 
 	_, err := r.databaseConnectionPool.Exec(context.Background(),
 		fmt.Sprintf(`UPDATE spec.%s SET deleted = true WHERE payload -> 'metadata' ->> 'name' = $1 AND
 			     payload -> 'metadata' ->> 'namespace' = $2 AND deleted = false`, r.tableName), name, namespace)
-
-	if err == nil {
-		log.Info("Instance has been updated as deleted in the database...")
+	if err != nil {
+		return fmt.Errorf("failed to delete instance from the database: %w", err)
 	}
 
-	return err
+	log.Info("Instance has been updated as deleted in the database")
+
+	return nil
 }
 
 // from https://book.kubebuilder.io/reference/using-finalizers.html

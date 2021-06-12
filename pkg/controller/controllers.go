@@ -4,6 +4,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	appsv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/apps/v1"
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
@@ -18,7 +20,7 @@ func AddToScheme(s *runtime.Scheme) error {
 
 	for _, schemeBuilder := range schemeBuilders {
 		if err := schemeBuilder.AddToScheme(s); err != nil {
-			return err
+			return fmt.Errorf("failed to add scheme: %w", err)
 		}
 	}
 
@@ -33,7 +35,7 @@ func AddControllers(mgr ctrl.Manager, dbConnectionPool *pgxpool.Pool) error {
 
 	for _, addControllerFunction := range addControllerFunctions {
 		if err := addControllerFunction(mgr, dbConnectionPool); err != nil {
-			return err
+			return fmt.Errorf("failed to add controller: %w", err)
 		}
 	}
 

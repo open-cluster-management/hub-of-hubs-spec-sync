@@ -66,7 +66,7 @@ func doMain() int {
 	// open database
 	dbConnectionPool, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
-		log.Error(err, "")
+		log.Error(err, "Failed to connect to the database")
 		return 1
 	}
 	defer dbConnectionPool.Close()
@@ -75,12 +75,13 @@ func doMain() int {
 	// Become the leader before proceeding
 	err = leader.Become(ctx, "hub-of-hubs-spec-syncer-lock")
 	if err != nil {
-		log.Error(err, "")
+		log.Error(err, "Failed to become leader")
 		return 1
 	}
 
-	mgr, err := createManager(namespace, metricsHost, metricsPort, dbConnectionPool, log)
+	mgr, err := createManager(namespace, metricsHost, metricsPort, dbConnectionPool)
 	if err != nil {
+		log.Error(err, "Failed to create manager")
 		return 1
 	}
 
@@ -94,8 +95,8 @@ func doMain() int {
 	return 0
 }
 
-func createManager(namespace, metricsHost string, metricsPort int32, dbConnectionPool *pgxpool.Pool,
-	log logr.Logger) (ctrl.Manager, error) {
+func createManager(namespace, metricsHost string, metricsPort int32,
+	dbConnectionPool *pgxpool.Pool) (ctrl.Manager, error) {
 	options := ctrl.Options{
 		Namespace:          namespace,
 		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
@@ -112,18 +113,15 @@ func createManager(namespace, metricsHost string, metricsPort int32, dbConnectio
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), options)
 	if err != nil {
-		log.Error(err, "")
-		return nil, err
+		return nil, fmt.Errorf("failed to create a new manager: %w", err)
 	}
 
 	if err := controller.AddToScheme(mgr.GetScheme()); err != nil {
-		log.Error(err, "")
-		return nil, err
+		return nil, fmt.Errorf("failed to add schemes: %w", err)
 	}
 
 	if err := controller.AddControllers(mgr, dbConnectionPool); err != nil {
-		log.Error(err, "")
-		return nil, err
+		return nil, fmt.Errorf("failed to add controllers: %w", err)
 	}
 
 	return mgr, nil
