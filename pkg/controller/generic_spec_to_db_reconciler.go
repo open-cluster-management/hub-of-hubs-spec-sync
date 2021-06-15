@@ -97,7 +97,9 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 		return nil, r.removeFinalizerAndDelete(ctx, instance, log)
 	}
 
-	return cleanInstance(instance), r.addFinalizer(ctx, instance, log)
+	err = r.addFinalizer(ctx, instance, log)
+
+	return cleanInstance(instance), err
 }
 
 func isInstanceBeingDeleted(instance object) bool {
