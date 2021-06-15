@@ -43,7 +43,7 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 
 	ctx := context.Background()
 
-	instance, err := r.processCR(ctx, request, reqLogger)
+	instanceUID, instance, err := r.processCR(ctx, request, reqLogger)
 	if err != nil {
 		reqLogger.Info("Reconciliation failed: %v", err)
 		return ctrl.Result{Requeue: true, RequeueAfter: requeuePeriodSeconds * time.Second}, err
@@ -54,7 +54,7 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 		return ctrl.Result{}, nil
 	}
 
-	instanceInTheDatabase, err := r.processInstanceInTheDatabase(ctx, instance, reqLogger)
+	instanceInTheDatabase, err := r.processInstanceInTheDatabase(ctx, instance, instanceUID, reqLogger)
 	if err != nil {
 		reqLogger.Error(err, "Reconciliation failed")
 		return ctrl.Result{Requeue: true, RequeueAfter: requeuePeriodSeconds * time.Second}, err
@@ -65,7 +65,7 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 
 		_, err := r.databaseConnectionPool.Exec(ctx,
 			fmt.Sprintf("UPDATE spec.%s SET payload = $1 WHERE id = $2", r.tableName),
-			&instance, string(instance.GetUID()))
+			&instance, instanceUID)
 		if err != nil {
 			err = fmt.Errorf("failed to update the database with new value: %w", err)
 			reqLogger.Error(err, "Reconciliation failed")
@@ -80,26 +80,26 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 }
 
 func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.Request,
-	log logr.Logger) (object, error) {
+	log logr.Logger) (string, object, error) {
 	instance := r.createInstance()
 
 	err := r.client.Get(ctx, request.NamespacedName, instance)
 	if apierrors.IsNotFound(err) {
 		// the instance on hub was deleted, update all the matching instances in the database as deleted
-		return nil, r.deleteFromTheDatabase(request.Name, request.Namespace, log)
+		return "", nil, r.deleteFromTheDatabase(request.Name, request.Namespace, log)
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to get the instance from hub: %w", err)
+		return "", nil, fmt.Errorf("failed to get the instance from hub: %w", err)
 	}
 
 	if isInstanceBeingDeleted(instance) {
-		return nil, r.removeFinalizerAndDelete(ctx, instance, log)
+		return "", nil, r.removeFinalizerAndDelete(ctx, instance, log)
 	}
 
 	err = r.addFinalizer(ctx, instance, log)
 
-	return cleanInstance(instance), err
+	return string(instance.GetUID()), cleanInstance(instance), err
 }
 
 func isInstanceBeingDeleted(instance object) bool {
@@ -145,18 +145,18 @@ func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance o
 }
 
 func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Context, instance object,
-	log logr.Logger) (object, error) {
+	instanceUID string, log logr.Logger) (object, error) {
 	instanceInTheDatabase := r.createInstance()
 	err := r.databaseConnectionPool.QueryRow(ctx,
 		fmt.Sprintf("SELECT payload FROM spec.%s WHERE id = $1", r.tableName),
-		string(instance.GetUID())).Scan(&instanceInTheDatabase)
+		instanceUID).Scan(&instanceInTheDatabase)
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		log.Info("The instance with the current UID does not exist in the database, inserting...")
 
 		_, err := r.databaseConnectionPool.Exec(ctx,
 			fmt.Sprintf("INSERT INTO spec.%s (id,payload) values($1, $2::jsonb)", r.tableName),
-			string(instance.GetUID()), &instance)
+			instanceUID, &instance)
 		if err != nil {
 			return nil, fmt.Errorf("insert into database failed: %w", err)
 		}
