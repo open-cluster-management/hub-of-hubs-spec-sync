@@ -13,6 +13,7 @@
 #   - lint - runs code analysis tools
 #   - clean - cleans the build directories
 
+COMPONENT := $(shell basename $(shell pwd))
 
 .PHONY: all				##perform code formatting and builds the code
 all: fmt build
@@ -23,19 +24,19 @@ fmt:
 
 .PHONY: build		##build the controller
 build:
-	@go build -o build/_output/bin/hub-of-hubs-spec-syncer cmd/manager/main.go
+	@go build -o bin/${COMPONENT} cmd/manager/main.go
 
-build/test:
-	@mkdir -p build/test
+.PHONY: build-images			##builds docker image locally for running the components using docker
+build-images: all
+	docker build -t ${IMAGE} --build-arg COMPONENT=${COMPONENT} -f build/Dockerfile .
 
-.PHONY: test				##perform tests
-test: lint build/test
-	go test -o build/test/bsa_test -c ./pkg/bsa
-	@DYLD_LIBRARY_PATH=${BSA_C_DIRECTORY}/bsa/Debug ./build/test/bsa_test -test.v
+.PHONY: push-images			##pushes the local docker image to 'docker.io' docker registry
+push-images: build-images
+	@docker push ${IMAGE}
 
 .PHONY: clean			##clean the build directories
 clean:
-	@rm -rf build/text
+	@rm -rf bin
 
 .PHONY: lint				##runs code analysis tools
 lint:
