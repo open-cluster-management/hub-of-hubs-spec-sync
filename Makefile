@@ -21,7 +21,9 @@ all: fmt build
 
 .PHONY: fmt				##format code
 fmt:
+	@gci -w .
 	@go fmt ./...
+	@gofumpt -w .
 
 .PHONY: build		##build the controller
 build:
