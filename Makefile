@@ -14,6 +14,7 @@
 #   - clean - cleans the build directories
 
 COMPONENT := $(shell basename $(shell pwd))
+IMAGE := ${REGISTRY}/${COMPONENT}:${IMAGE_TAG}
 
 .PHONY: all				##perform code formatting and builds the code
 all: fmt build
