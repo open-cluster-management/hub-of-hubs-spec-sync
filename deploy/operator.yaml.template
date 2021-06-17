@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: hub-of-hubs-spec-syncer
+      name: ${COMPONENT}
   template:
     metadata:
       labels:
-        name: hub-of-hubs-spec-syncer
+        name: ${COMPONENT}
     spec:
-      serviceAccountName: hub-of-hubs-spec-syncer
+      serviceAccountName: ${COMPONENT}
       containers:
-        - name: hub-of-hubs-spec-syncer
-          image: ${REGISTRY}/hub-of-hubs-spec-syncer:${IMAGE_TAG}
+        - name: ${COMPONENT}
+          image: ${REGISTRY}/${COMPONENT}:${IMAGE_TAG}
           command:
-          - hub-of-hubs-spec-syncer
+          - ${COMPONENT}
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
@@ -32,25 +32,25 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: hub-of-hubs-spec-syncer
+              value: ${COMPONENT}
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
 subjects:
 - kind: ServiceAccount
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
   namespace: open-cluster-management
 roleRef:
   kind: ClusterRole
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
   apiGroup: rbac.authorization.k8s.io
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
 rules:
 - apiGroups:
   - "policy.open-cluster-management.io"
@@ -90,20 +90,20 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
 subjects:
 - kind: ServiceAccount
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
 roleRef:
   kind: Role
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   creationTimestamp: null
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
 rules:
 - apiGroups:
   - ""
@@ -149,7 +149,7 @@ rules:
 - apiGroups:
   - apps
   resourceNames:
-  - hub-of-hubs-spec-syncer
+  - ${COMPONENT}
   resources:
   - deployments/finalizers
   verbs:
@@ -171,4 +171,4 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: hub-of-hubs-spec-syncer
+  name: ${COMPONENT}
