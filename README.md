@@ -1,9 +1,8 @@
 [comment]: # ( Copyright Contributors to the Open Cluster Management project )
 
-# Hub-of-Hubs Spec Syncer
-Red Hat Advanced Cluster Management Hub-of-Hubs Spec Syncer
+# Hub-of-Hubs Spec Sync
 
-(Syncer - the name taken from the [KCP project](https://github.com/kcp-dev/kcp/blob/main/contrib/demo/README.md#syncer))
+Part of [Hub-of-Hubs](https://github.com/open-cluster-management/hub-of-hubs).
 
 ## How it works
 
