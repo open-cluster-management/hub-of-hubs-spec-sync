@@ -17,7 +17,7 @@ make build
 Disable the currently running controller in the cluster (if previously deployed):
 
 ```
-kubectl scale deployment hub-of-hubs-spec-syncer --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management --replicas 0
+kubectl scale deployment hub-of-hubs-spec-sync --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management --replicas 0
 ```
 
 Set the following environment variables:
