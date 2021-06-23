@@ -15,7 +15,6 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/open-cluster-management/hub-of-hubs-spec-syncer/pkg/controller"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
-	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"github.com/spf13/pflag"
@@ -69,14 +68,6 @@ func doMain() int {
 	}
 	defer dbConnectionPool.Close()
 
-	ctx := context.TODO()
-	// Become the leader before proceeding
-	err = leader.Become(ctx, "hub-of-hubs-spec-syncer-lock")
-	if err != nil {
-		log.Error(err, "Failed to become leader")
-		return 1
-	}
-
 	mgr, err := createManager(namespace, metricsHost, metricsPort, dbConnectionPool)
 	if err != nil {
 		log.Error(err, "Failed to create manager")
@@ -98,6 +89,8 @@ func createManager(namespace, metricsHost string, metricsPort int32,
 	options := ctrl.Options{
 		Namespace:          namespace,
 		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
+		LeaderElection:     true,
+		LeaderElectionID:   "hub-of-hubs-spec-sync-lock",
 	}
 
 	// Add support for MultiNamespace set in WATCH_NAMESPACE (e.g ns1,ns2)
