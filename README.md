@@ -2,7 +2,7 @@
 
 # Hub-of-Hubs Spec Sync
 
-The spec sync component of Hub-of-Hubs](https://github.com/open-cluster-management/hub-of-hubs).
+The spec sync component of [Hub-of-Hubs](https://github.com/open-cluster-management/hub-of-hubs).
 
 ## How it works
 
