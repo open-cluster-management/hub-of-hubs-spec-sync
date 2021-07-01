@@ -54,13 +54,12 @@ func doMain() int {
 		return 1
 	}
 
-	// Get database URL
 	databaseURL, found := os.LookupEnv(environmentVariableDatabaseURL)
-	if found {
-		log.Info("Found:", "environment variable", environmentVariableDatabaseURL)
+	if !found {
+		log.Error(nil, "Not found:", "environment variable", environmentVariableDatabaseURL)
+		return 1
 	}
 
-	// open database
 	dbConnectionPool, err := pgxpool.Connect(context.Background(), databaseURL)
 	if err != nil {
 		log.Error(err, "Failed to connect to the database")
