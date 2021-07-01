@@ -86,7 +86,7 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 	err := r.client.Get(ctx, request.NamespacedName, instance)
 	if apierrors.IsNotFound(err) {
 		// the instance on hub was deleted, update all the matching instances in the database as deleted
-		return "", nil, r.deleteFromTheDatabase(request.Name, request.Namespace, log)
+		return "", nil, r.deleteFromTheDatabase(ctx, request.Name, request.Namespace, log)
 	}
 
 	if err != nil {
@@ -115,7 +115,7 @@ func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context
 	log.Info("Removing an instance from the database")
 
 	// the policy is being deleted, update all the matching policies in the database as deleted
-	if err := r.deleteFromTheDatabase(instance.GetName(), instance.GetNamespace(), log); err != nil {
+	if err := r.deleteFromTheDatabase(ctx, instance.GetName(), instance.GetNamespace(), log); err != nil {
 		return fmt.Errorf("failed to delete an instance from the database: %w", err)
 	}
 
@@ -187,10 +187,11 @@ func cleanInstance(instance object) object {
 	return instance
 }
 
-func (r *genericSpecToDBReconciler) deleteFromTheDatabase(name, namespace string, log logr.Logger) error {
+func (r *genericSpecToDBReconciler) deleteFromTheDatabase(ctx context.Context, name, namespace string,
+	log logr.Logger) error {
 	log.Info("Instance was deleted, update the deleted field in the database")
 
-	_, err := r.databaseConnectionPool.Exec(context.Background(),
+	_, err := r.databaseConnectionPool.Exec(ctx,
 		fmt.Sprintf(`UPDATE spec.%s SET deleted = true WHERE payload -> 'metadata' ->> 'name' = $1 AND
 			     payload -> 'metadata' ->> 'namespace' = $2 AND deleted = false`, r.tableName), name, namespace)
 	if err != nil {
