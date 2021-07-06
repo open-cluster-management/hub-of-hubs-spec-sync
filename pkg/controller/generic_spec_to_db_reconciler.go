@@ -45,7 +45,7 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 
 	instanceUID, instance, err := r.processCR(ctx, request, reqLogger)
 	if err != nil {
-		reqLogger.Info("Reconciliation failed: %v", err)
+		reqLogger.Error(err, "Reconciliation failed")
 		return ctrl.Result{Requeue: true, RequeueAfter: requeuePeriodSeconds * time.Second}, err
 	}
 
