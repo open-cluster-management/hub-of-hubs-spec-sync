@@ -67,6 +67,7 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 			fmt.Sprintf("UPDATE spec.%s SET payload = $1 WHERE id = $2", r.tableName),
 			&instance, instanceUID)
 		if err != nil {
+			// wrap the error from an external package, see https://github.com/tomarrell/wrapcheck
 			err = fmt.Errorf("failed to update the database with new value: %w", err)
 			reqLogger.Error(err, "Reconciliation failed")
 
