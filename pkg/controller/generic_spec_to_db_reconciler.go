@@ -27,7 +27,7 @@ type genericSpecToDBReconciler struct {
 	tableName              string
 	finalizerName          string
 	createInstance         func() object
-	areEqual               func(instance1, instance2 object) bool
+	areEqual               func(object, object) bool
 }
 
 type object interface {
