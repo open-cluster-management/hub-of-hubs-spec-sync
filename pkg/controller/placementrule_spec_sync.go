@@ -20,8 +20,14 @@ func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 			tableName:              "placementrules",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementrule-cleanup",
 			createInstance:         func() object { return &appsv1.PlacementRule{} },
+			cleanStatus:            cleanPlacementRuleStatus,
 			areEqual:               arePlacementRulesEqual,
 		})
+}
+
+func cleanPlacementRuleStatus(instance object) {
+	placementRule := instance.(*appsv1.PlacementRule)
+	placementRule.Status = appsv1.PlacementRuleStatus{}
 }
 
 func arePlacementRulesEqual(instance1, instance2 object) bool {

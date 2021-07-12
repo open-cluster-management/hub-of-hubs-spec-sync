@@ -20,8 +20,14 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 			tableName:              "placementbindings",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementbinding-cleanup",
 			createInstance:         func() object { return &policiesv1.PlacementBinding{} },
+			cleanStatus:            cleanPlacementBindingStatus,
 			areEqual:               arePlacementBindingsEqual,
 		})
+}
+
+func cleanPlacementBindingStatus(instance object) {
+	placementBinding := instance.(*policiesv1.PlacementBinding)
+	placementBinding.Status = policiesv1.PlacementBindingStatus{}
 }
 
 func arePlacementBindingsEqual(instance1, instance2 object) bool {

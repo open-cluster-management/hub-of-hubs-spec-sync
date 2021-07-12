@@ -20,8 +20,14 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 			tableName:              "policies",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/policy-cleanup",
 			createInstance:         func() object { return &policiesv1.Policy{} },
+			cleanStatus:            cleanPolicyStatus,
 			areEqual:               arePoliciesEqual,
 		})
+}
+
+func cleanPolicyStatus(instance object) {
+	policy := instance.(*policiesv1.Policy)
+	policy.Status = policiesv1.PolicyStatus{}
 }
 
 func arePoliciesEqual(instance1, instance2 object) bool {

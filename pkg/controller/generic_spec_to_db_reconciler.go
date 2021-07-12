@@ -27,6 +27,7 @@ type genericSpecToDBReconciler struct {
 	tableName              string
 	finalizerName          string
 	createInstance         func() object
+	cleanStatus            func(object)
 	areEqual               func(object, object) bool
 }
 
@@ -100,7 +101,7 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 
 	err = r.addFinalizer(ctx, instance, log)
 
-	return string(instance.GetUID()), cleanInstance(instance), err
+	return string(instance.GetUID()), r.cleanInstance(instance), err
 }
 
 func isInstanceBeingDeleted(instance object) bool {
@@ -174,7 +175,7 @@ func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Con
 	return instanceInTheDatabase, nil
 }
 
-func cleanInstance(instance object) object {
+func (r *genericSpecToDBReconciler) cleanInstance(instance object) object {
 	instance.SetUID("")
 	instance.SetResourceVersion("")
 	instance.SetManagedFields(nil)
@@ -184,6 +185,8 @@ func cleanInstance(instance object) object {
 	instance.SetClusterName("")
 
 	delete(instance.GetAnnotations(), "kubectl.kubernetes.io/last-applied-configuration")
+
+	r.cleanStatus(instance)
 
 	return instance
 }
