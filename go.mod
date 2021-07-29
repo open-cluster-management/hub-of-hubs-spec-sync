@@ -3,19 +3,16 @@ module github.com/open-cluster-management/hub-of-hubs-spec-syncer
 go 1.16
 
 require (
-	github.com/daixiang0/gci v0.2.8 // indirect
 	github.com/go-logr/logr v0.1.0
+	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/onsi/gomega v1.10.2 // indirect
-	github.com/open-cluster-management/api v0.0.0-20200610161514-939cead3902c
 	github.com/open-cluster-management/governance-policy-propagator v0.0.0-20210409191610-0ec1d5a4e19d
 	github.com/operator-framework/operator-sdk v0.18.1
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/tools v0.1.5 // indirect
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v12.0.0+incompatible
-	mvdan.cc/gofumpt v0.1.1 // indirect
 	sigs.k8s.io/controller-runtime v0.6.0
 )
 
