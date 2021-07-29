@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
-// AddToScheme adds all Resources to the Scheme.
+// AddToScheme adds all the resources to be processed to the Scheme.
 func AddToScheme(s *runtime.Scheme) error {
 	schemeBuilders := []*scheme.Builder{policiesv1.SchemeBuilder, appsv1.SchemeBuilder}
 
@@ -27,6 +27,7 @@ func AddToScheme(s *runtime.Scheme) error {
 	return nil
 }
 
+// AddControllers adds all the controllers to the Manager.
 func AddControllers(mgr ctrl.Manager, dbConnectionPool *pgxpool.Pool) error {
 	addControllerFunctions := []func(ctrl.Manager, *pgxpool.Pool) error{
 		addPolicyController,
