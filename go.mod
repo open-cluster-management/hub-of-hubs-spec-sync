@@ -11,7 +11,8 @@ require (
 	github.com/open-cluster-management/governance-policy-propagator v0.0.0-20210409191610-0ec1d5a4e19d
 	github.com/operator-framework/operator-sdk v0.18.1
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/tools v0.1.1 // indirect
+	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
+	golang.org/x/tools v0.1.5 // indirect
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v12.0.0+incompatible
 	mvdan.cc/gofumpt v0.1.1 // indirect
