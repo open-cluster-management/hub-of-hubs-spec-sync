@@ -17,8 +17,6 @@ spec:
       containers:
         - name: ${COMPONENT}
           image: ${REGISTRY}/${COMPONENT}:${IMAGE_TAG}
-          command:
-          - ${COMPONENT}
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
@@ -31,8 +29,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: ${COMPONENT}
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
