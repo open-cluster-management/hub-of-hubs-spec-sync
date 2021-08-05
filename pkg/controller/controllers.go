@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	appsv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/apps/v1"
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
+	configv1 "github.com/open-cluster-management/hub-of-hubs-data-types/apis/config/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
@@ -16,7 +17,7 @@ import (
 
 // AddToScheme adds all the resources to be processed to the Scheme.
 func AddToScheme(s *runtime.Scheme) error {
-	schemeBuilders := []*scheme.Builder{policiesv1.SchemeBuilder, appsv1.SchemeBuilder}
+	schemeBuilders := []*scheme.Builder{policiesv1.SchemeBuilder, appsv1.SchemeBuilder, configv1.SchemeBuilder}
 
 	for _, schemeBuilder := range schemeBuilders {
 		if err := schemeBuilder.AddToScheme(s); err != nil {
@@ -30,8 +31,8 @@ func AddToScheme(s *runtime.Scheme) error {
 // AddControllers adds all the controllers to the Manager.
 func AddControllers(mgr ctrl.Manager, dbConnectionPool *pgxpool.Pool) error {
 	addControllerFunctions := []func(ctrl.Manager, *pgxpool.Pool) error{
-		addPolicyController,
-		addPlacementRuleController, addPlacementBindingController,
+		addPolicyController, addPlacementRuleController,
+		addPlacementBindingController, addHubOfHubsConfigController,
 	}
 
 	for _, addControllerFunction := range addControllerFunctions {
