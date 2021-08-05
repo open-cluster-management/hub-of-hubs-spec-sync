@@ -1,7 +1,3 @@
-run:
-  skip-files: # code duplication due to lack of generics in go
-    - pkg/controller/hoh_config_spec_sync.go
-    - pkg/controller/placementrule_spec_sync.go
 linters:
   enable-all: true
   disable:
