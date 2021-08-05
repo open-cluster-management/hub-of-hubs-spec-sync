@@ -82,6 +82,16 @@ rules:
   - list
   - watch
   - update
+- apiGroups:
+  - "hub-of-hubs.open-cluster-management.io"
+  resources:
+  - configs
+  - configs/finalizers
+  verbs:
+  - get
+  - list
+  - watch
+  - update # for finalizer
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
