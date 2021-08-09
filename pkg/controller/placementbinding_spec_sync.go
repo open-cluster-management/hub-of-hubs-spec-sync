@@ -26,15 +26,24 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 }
 
 func cleanPlacementBindingStatus(instance object) {
-	placementBinding := instance.(*policiesv1.PlacementBinding)
+	placementBinding, ok := instance.(*policiesv1.PlacementBinding)
+
+	if !ok {
+		panic("wrong instance passed to cleanConfigStatus: not policiesv1.PlacementBinding")
+	}
+
 	placementBinding.Status = policiesv1.PlacementBindingStatus{}
 }
 
 func arePlacementBindingsEqual(instance1, instance2 object) bool {
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
-	placementBinding1 := instance1.(*policiesv1.PlacementBinding)
-	placementBinding2 := instance2.(*policiesv1.PlacementBinding)
+	placementBinding1, ok1 := instance1.(*policiesv1.PlacementBinding)
+	placementBinding2, ok2 := instance2.(*policiesv1.PlacementBinding)
+
+	if !ok1 || !ok2 {
+		return false
+	}
 
 	placementRefMatch := equality.Semantic.DeepEqual(placementBinding1.PlacementRef, placementBinding2.PlacementRef)
 	subjectsMatch := equality.Semantic.DeepEqual(placementBinding1.Subjects, placementBinding2.Subjects)

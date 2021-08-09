@@ -26,13 +26,22 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 }
 
 func cleanPolicyStatus(instance object) {
-	policy := instance.(*policiesv1.Policy)
+	policy, ok := instance.(*policiesv1.Policy)
+
+	if !ok {
+		panic("wrong instance passed to cleanConfigStatus: not policiesv1.Policy")
+	}
+
 	policy.Status = policiesv1.PolicyStatus{}
 }
 
 func arePoliciesEqual(instance1, instance2 object) bool {
-	policy1 := instance1.(*policiesv1.Policy)
-	policy2 := instance2.(*policiesv1.Policy)
+	policy1, ok1 := instance1.(*policiesv1.Policy)
+	policy2, ok2 := instance2.(*policiesv1.Policy)
+
+	if !ok1 || !ok2 {
+		return false
+	}
 
 	// TODO handle Template comparison later
 	policy1WithoutTemplates := policy1.DeepCopy()

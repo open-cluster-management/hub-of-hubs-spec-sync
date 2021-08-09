@@ -26,16 +26,21 @@ func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 }
 
 func cleanPlacementRuleStatus(instance object) {
-	placementRule := instance.(*appsv1.PlacementRule)
+	placementRule, ok := instance.(*appsv1.PlacementRule)
+
+	if !ok {
+		panic("wrong instance passed to cleanConfigStatus: not appsv1.PlacementRule")
+	}
+
 	placementRule.Status = appsv1.PlacementRuleStatus{}
 }
 
 func arePlacementRulesEqual(instance1, instance2 object) bool {
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
-	placementRule1 := instance1.(*appsv1.PlacementRule)
-	placementRule2 := instance2.(*appsv1.PlacementRule)
-	specMatch := equality.Semantic.DeepEqual(placementRule1.Spec, placementRule2.Spec)
+	placementRule1, ok1 := instance1.(*appsv1.PlacementRule)
+	placementRule2, ok2 := instance2.(*appsv1.PlacementRule)
+	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(placementRule1.Spec, placementRule2.Spec)
 
 	return annotationMatch && specMatch
 }

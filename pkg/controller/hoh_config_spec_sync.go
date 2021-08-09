@@ -36,16 +36,21 @@ func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxp
 }
 
 func cleanConfigStatus(instance object) {
-	config := instance.(*configv1.Config)
+	config, ok := instance.(*configv1.Config)
+
+	if !ok {
+		panic("wrong instance passed to cleanConfigStatus: not configv1.Config")
+	}
+
 	config.Status = configv1.ConfigStatus{}
 }
 
 func areConfigsEqual(instance1, instance2 object) bool {
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
-	config1 := instance1.(*configv1.Config)
-	config2 := instance2.(*configv1.Config)
-	specMatch := equality.Semantic.DeepEqual(config1.Spec, config2.Spec)
+	config1, ok1 := instance1.(*configv1.Config)
+	config2, ok2 := instance2.(*configv1.Config)
+	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(config1.Spec, config2.Spec)
 
 	return annotationMatch && specMatch
 }
