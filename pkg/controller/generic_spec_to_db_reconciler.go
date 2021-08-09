@@ -110,7 +110,7 @@ func isInstanceBeingDeleted(instance object) bool {
 
 func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context, instance object,
 	log logr.Logger) error {
-	if !containsString(instance.GetFinalizers(), r.finalizerName) {
+	if !controllerutil.ContainsFinalizer(instance, r.finalizerName) {
 		return nil
 	}
 
@@ -132,7 +132,7 @@ func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context
 }
 
 func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance object, log logr.Logger) error {
-	if containsString(instance.GetFinalizers(), r.finalizerName) {
+	if controllerutil.ContainsFinalizer(instance, r.finalizerName) {
 		return nil
 	}
 
@@ -205,15 +205,4 @@ func (r *genericSpecToDBReconciler) deleteFromTheDatabase(ctx context.Context, n
 	log.Info("Instance has been updated as deleted in the database")
 
 	return nil
-}
-
-// from https://book.kubebuilder.io/reference/using-finalizers.html
-func containsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-
-	return false
 }
