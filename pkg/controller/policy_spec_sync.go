@@ -4,6 +4,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
 	"github.com/open-cluster-management/governance-policy-propagator/pkg/controller/common"
@@ -11,7 +13,7 @@ import (
 )
 
 func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	err := ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.Policy{}).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
@@ -23,6 +25,8 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 			cleanStatus:            cleanPolicyStatus,
 			areEqual:               arePoliciesEqual,
 		})
+
+	return fmt.Errorf("failed to add PolicyController to the manager: %w", err)
 }
 
 func cleanPolicyStatus(instance object) {

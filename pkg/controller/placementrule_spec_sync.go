@@ -4,6 +4,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	appsv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/apps/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -11,7 +13,7 @@ import (
 )
 
 func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	err := ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1.PlacementRule{}).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
@@ -23,6 +25,8 @@ func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 			cleanStatus:            cleanPlacementRuleStatus,
 			areEqual:               arePlacementRulesEqual,
 		})
+
+	return fmt.Errorf("failed to add PlacementRule Controller to the manager: %w", err)
 }
 
 func cleanPlacementRuleStatus(instance object) {

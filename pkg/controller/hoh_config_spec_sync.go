@@ -4,6 +4,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	configv1 "github.com/open-cluster-management/hub-of-hubs-data-types/apis/config/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -18,7 +20,7 @@ const (
 )
 
 func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	err := ctrl.NewControllerManagedBy(mgr).
 		For(&configv1.Config{}).
 		WithEventFilter(predicate.NewPredicateFuncs(func(meta metav1.Object, object runtime.Object) bool {
 			return meta.GetNamespace() == hohSystemNamespace
@@ -33,6 +35,8 @@ func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxp
 			cleanStatus:            cleanConfigStatus,
 			areEqual:               areConfigsEqual,
 		})
+
+	return fmt.Errorf("failed to add HubOfHubsConfig Controller to the manager: %w", err)
 }
 
 func cleanConfigStatus(instance object) {

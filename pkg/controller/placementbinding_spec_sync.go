@@ -4,6 +4,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -11,7 +13,7 @@ import (
 )
 
 func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	err := ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.PlacementBinding{}).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
@@ -23,6 +25,8 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 			cleanStatus:            cleanPlacementBindingStatus,
 			areEqual:               arePlacementBindingsEqual,
 		})
+
+	return fmt.Errorf("failed to add PlacementBinding Controller to the manager: %w", err)
 }
 
 func cleanPlacementBindingStatus(instance object) {
