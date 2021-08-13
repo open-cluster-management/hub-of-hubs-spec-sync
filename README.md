@@ -26,6 +26,7 @@ Set the following environment variables:
 
 * DATABASE_URL
 * WATCH_NAMESPACE
+* POD_NAMESPACE
 
 Set the `DATABASE_URL` according to the PostgreSQL URL format: `postgres://YourUserName:YourURLEscapedPassword@YourHostname:5432/YourDatabaseName?sslmode=verify-full`.
 
@@ -36,6 +37,8 @@ python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1])" 'YourPass
 ```
 
 `WATCH_NAMESPACE` can be defined empty so the controller will watch all the namespaces.
+
+`POD_NAMESPACE` should usually be `open-cluster-management`
 
 ```
 ./bin/hub-of-hubs-spec-sync --kubeconfig $TOP_HUB_CONFIG

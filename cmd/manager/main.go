@@ -23,10 +23,11 @@ import (
 )
 
 const (
-	metricsHost                             = "0.0.0.0"
-	metricsPort                       int32 = 8384
-	environmentVariableDatabaseURL          = "DATABASE_URL"
-	environmentVariableWatchNamespace       = "WATCH_NAMESPACE"
+	metricsHost                                  = "0.0.0.0"
+	metricsPort                            int32 = 8384
+	environmentVariableControllerNamespace       = "POD_NAMESPACE"
+	environmentVariableDatabaseURL               = "DATABASE_URL"
+	environmentVariableWatchNamespace            = "WATCH_NAMESPACE"
 )
 
 func printVersion(log logr.Logger) {
@@ -47,6 +48,12 @@ func doMain() int {
 
 	printVersion(log)
 
+	leaderElectionNamespace, found := os.LookupEnv(environmentVariableControllerNamespace)
+	if !found {
+		log.Error(nil, "Not found:", "environment variable", environmentVariableControllerNamespace)
+		return 1
+	}
+
 	namespace, found := os.LookupEnv(environmentVariableWatchNamespace)
 	if !found {
 		log.Error(nil, "Failed to get watch namespace")
@@ -66,7 +73,7 @@ func doMain() int {
 	}
 	defer dbConnectionPool.Close()
 
-	mgr, err := createManager(namespace, metricsHost, metricsPort, dbConnectionPool)
+	mgr, err := createManager(leaderElectionNamespace, namespace, metricsHost, metricsPort, dbConnectionPool)
 	if err != nil {
 		log.Error(err, "Failed to create manager")
 		return 1
@@ -82,13 +89,13 @@ func doMain() int {
 	return 0
 }
 
-func createManager(namespace, metricsHost string, metricsPort int32,
+func createManager(leaderElectionNamespace, namespace, metricsHost string, metricsPort int32,
 	dbConnectionPool *pgxpool.Pool) (ctrl.Manager, error) {
 	options := ctrl.Options{
 		Namespace:               namespace,
 		MetricsBindAddress:      fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 		LeaderElection:          true,
-		LeaderElectionNamespace: "open-cluster-management",
+		LeaderElectionNamespace: leaderElectionNamespace,
 		LeaderElectionID:        "hub-of-hubs-spec-sync-lock",
 	}
 
