@@ -25,8 +25,11 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 			cleanStatus:            cleanPlacementBindingStatus,
 			areEqual:               arePlacementBindingsEqual,
 		})
+	if err != nil {
+		return fmt.Errorf("failed to add PlacementBinding Controller to the manager: %w", err)
+	}
 
-	return fmt.Errorf("failed to add PlacementBinding Controller to the manager: %w", err)
+	return nil
 }
 
 func cleanPlacementBindingStatus(instance object) {

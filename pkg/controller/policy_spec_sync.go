@@ -25,8 +25,11 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 			cleanStatus:            cleanPolicyStatus,
 			areEqual:               arePoliciesEqual,
 		})
+	if err != nil {
+		return fmt.Errorf("failed to add PolicyController to the manager: %w", err)
+	}
 
-	return fmt.Errorf("failed to add PolicyController to the manager: %w", err)
+	return nil
 }
 
 func cleanPolicyStatus(instance object) {

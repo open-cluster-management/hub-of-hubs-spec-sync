@@ -35,8 +35,11 @@ func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxp
 			cleanStatus:            cleanConfigStatus,
 			areEqual:               areConfigsEqual,
 		})
+	if err != nil {
+		return fmt.Errorf("failed to add HubOfHubsConfig Controller to the manager: %w", err)
+	}
 
-	return fmt.Errorf("failed to add HubOfHubsConfig Controller to the manager: %w", err)
+	return nil
 }
 
 func cleanConfigStatus(instance object) {

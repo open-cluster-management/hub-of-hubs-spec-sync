@@ -25,8 +25,11 @@ func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 			cleanStatus:            cleanPlacementRuleStatus,
 			areEqual:               arePlacementRulesEqual,
 		})
+	if err != nil {
+		return fmt.Errorf("failed to add PlacementRule Controller to the manager: %w", err)
+	}
 
-	return fmt.Errorf("failed to add PlacementRule Controller to the manager: %w", err)
+	return nil
 }
 
 func cleanPlacementRuleStatus(instance object) {
