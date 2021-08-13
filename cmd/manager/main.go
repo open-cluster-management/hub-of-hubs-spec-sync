@@ -85,10 +85,11 @@ func doMain() int {
 func createManager(namespace, metricsHost string, metricsPort int32,
 	dbConnectionPool *pgxpool.Pool) (ctrl.Manager, error) {
 	options := ctrl.Options{
-		Namespace:          namespace,
-		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
-		LeaderElection:     true,
-		LeaderElectionID:   "hub-of-hubs-spec-sync-lock",
+		Namespace:               namespace,
+		MetricsBindAddress:      fmt.Sprintf("%s:%d", metricsHost, metricsPort),
+		LeaderElection:          true,
+		LeaderElectionNamespace: "open-cluster-management",
+		LeaderElectionID:        "hub-of-hubs-spec-sync-lock",
 	}
 
 	// Add support for MultiNamespace set in WATCH_NAMESPACE (e.g ns1,ns2)
