@@ -6,7 +6,12 @@
 
 The spec sync component of [Hub-of-Hubs](https://github.com/open-cluster-management/hub-of-hubs).
 
-## How it works
+## Environment variables
+
+The following environment variables are required for the most tasks below:
+
+* `REGISTRY`, for example `docker.io/vadimeisenbergibm`.
+* `IMAGE_TAG`, for example `v0.1.0`.
 
 ## Build to run locally
 
@@ -46,8 +51,6 @@ python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1])" 'YourPass
 
 ## Build image
 
-Define the `REGISTRY` environment variable.
-
 ```
 make build-images
 ```
@@ -63,5 +66,5 @@ make build-images
 1.  Deploy the operator:
 
     ```
-    IMAGE_TAG=latest COMPONENT=$(basename $(pwd)) envsubst < deploy/operator.yaml.template | kubectl apply --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management -f -
+    COMPONENT=$(basename $(pwd)) envsubst < deploy/operator.yaml.template | kubectl apply --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management -f -
     ```
