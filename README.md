@@ -3,6 +3,7 @@
 # Hub-of-Hubs Spec Sync
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/open-cluster-management/hub-of-hubs-spec-sync)](https://goreportcard.com/report/github.com/open-cluster-management/hub-of-hubs-spec-sync)
+[![License](https://img.shields.io/github/license/open-cluster-management/hub-of-hubs-spec-sync)](/LICENSE)
 
 The spec sync component of [Hub-of-Hubs](https://github.com/open-cluster-management/hub-of-hubs).
 
