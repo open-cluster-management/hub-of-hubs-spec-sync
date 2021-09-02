@@ -13,7 +13,7 @@ require (
 	github.com/onsi/gomega v1.10.2 // indirect
 	github.com/open-cluster-management/governance-policy-propagator v0.0.0-20210520203318-a78632de1e26
 	github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.1.0
-	github.com/spf13/pflag v1.0.5
+	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/zap v1.14.1 // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/tools v0.1.5 // indirect
