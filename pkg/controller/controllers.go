@@ -32,7 +32,8 @@ func AddToScheme(s *runtime.Scheme) error {
 func AddControllers(mgr ctrl.Manager, dbConnectionPool *pgxpool.Pool) error {
 	addControllerFunctions := []func(ctrl.Manager, *pgxpool.Pool) error{
 		addPolicyController, addPlacementRuleController,
-		addPlacementBindingController, addHubOfHubsConfigController,
+		addPlacementBindingController, addHubOfHubsConfigController, addApplicationController,
+		addSubscriptionController, addChannelController,
 	}
 
 	for _, addControllerFunction := range addControllerFunctions {
