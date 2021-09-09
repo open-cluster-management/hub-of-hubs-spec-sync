@@ -7,6 +7,7 @@ require (
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/open-cluster-management/governance-policy-propagator v0.0.0-20210520203318-a78632de1e26
 	github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.1.0
+	github.com/open-cluster-management/multicloud-operators-channel v1.0.1-0.20201120143200-e505a259de45
 	github.com/open-cluster-management/multicloud-operators-subscription v1.2.2-2-20201130-59f96
 	golang.org/x/tools v0.1.5 // indirect
 	k8s.io/apimachinery v0.21.3
