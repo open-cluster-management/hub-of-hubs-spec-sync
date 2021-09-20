@@ -37,11 +37,12 @@ func printVersion(log logr.Logger) {
 
 // function to handle defers with exit, see https://stackoverflow.com/a/27629493/553720.
 func doMain() int {
-	opts := zap.Options{
-		Development: true,
-	}
+	var opts = zap.Options{}
+
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
+
+	opts.Development = true
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	log := ctrl.Log.WithName("cmd")
