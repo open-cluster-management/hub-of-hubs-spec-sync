@@ -3,18 +3,22 @@
 
 package controller
 
-
 import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
 	cdv1 "github.com/openshift/hive/apis/hive/v1"
- 	ctrl "sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 const (
-controllerName = "clusterdeployment-spec-synce"
-componentName = "clusterdeployment"
+	controllerName = "clusterdeployment-spec-synce"
+	componentName  = "clusterdeployments"
+)
+
+var (
+	log = ctrl.Log.WithName(controllerName)
 )
 
 func addClusterDeploymentController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
@@ -48,19 +52,14 @@ func cleanClusterDeploymentStatus(instance object) {
 }
 
 func areClusterDeploymentEqual(instance1, instance2 object) bool {
-	policy1, ok1 := instance1.(*policiesv1.Policy)
-	policy2, ok2 := instance2.(*policiesv1.Policy)
+	ins1, ok1 := instance1.(*cdv1.ClusterDeployment)
+	ins2, ok2 := instance2.(*cdv1.ClusterDeployment)
 
 	if !ok1 || !ok2 {
 		return false
 	}
 
-	// TODO handle Template comparison later
-	policy1WithoutTemplates := policy1.DeepCopy()
-	policy1WithoutTemplates.Spec.PolicyTemplates = nil
+	log.Info("need to add this compare func", ins1.GetName(), ins2.GetName())
 
-	policy2WithoutTemplates := policy2.DeepCopy()
-	policy2WithoutTemplates.Spec.PolicyTemplates = nil
-
-	return common.CompareSpecAndAnnotation(policy1WithoutTemplates, policy2WithoutTemplates)
+	return true
 }
