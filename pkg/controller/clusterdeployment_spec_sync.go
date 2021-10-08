@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
 	cdv1 "github.com/openshift/hive/apis/hive/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -23,7 +22,7 @@ var (
 
 func addClusterDeploymentController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	err := ctrl.NewControllerManagedBy(mgr).
-		For(&policiesv1.Policy{}).
+		For(&cdv1.ClusterDeployment{}).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
