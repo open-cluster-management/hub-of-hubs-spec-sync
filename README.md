@@ -25,7 +25,7 @@ make build
 Disable the currently running controller in the cluster (if previously deployed):
 
 ```
-kubectl scale deployment hub-of-hubs-spec-sync --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management --replicas 0
+kubectl scale deployment hub-of-hubs-spec-sync -n open-cluster-management --replicas 0
 ```
 
 Set the following environment variables:
@@ -61,11 +61,11 @@ make build-images
 1.  Create a secret with your database url:
 
     ```
-    kubectl create secret generic hub-of-hubs-database-secret --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management --from-literal=url=$DATABASE_URL
+    kubectl create secret generic hub-of-hubs-database-secret -n open-cluster-management --from-literal=url=$DATABASE_URL
     ```
 
 1.  Deploy the operator:
 
     ```
-    COMPONENT=$(basename $(pwd)) envsubst < deploy/operator.yaml.template | kubectl apply --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management -f -
+    COMPONENT=$(basename $(pwd)) envsubst < deploy/operator.yaml.template | kubectl apply -n open-cluster-management -f -
     ```
