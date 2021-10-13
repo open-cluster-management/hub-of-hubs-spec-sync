@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hoh-test
+---
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  labels:
+    cloud: AWS
+    region: us-east-1
+    vendor: OpenShift
+  name: hoh-test
+  namespace: hoh-test
+spec:
+  baseDomain: dev10.red-chesterfield.com
+  clusterName: hoh-test
+  controlPlaneConfig:
+    servingCertificates: {}
+  installAttemptsLimit: 1
+  installed: false
+  platform:
+    aws:
+      credentialsSecretRef:
+        name: hoh-test-aws-creds
+      region: us-east-1
+  provisioning:
+    imageSetRef:
+      name: img4.8.13-x86-64-appsub
+    installConfigSecretRef:
+      name: hoh-test-install-config
+    sshPrivateKeySecretRef:
+      name: hoh-test-ssh-private-key
+  pullSecretRef:
+    name: hoh-test-pull-secret
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: a-install-config
+  namespace: hoh-test
+  annotations:
+    hub-of-hubs.open-cluster-management.io/secret: "true"
+type: Opaque
+data:
+  # Base64 encoding of install-config yaml
+  install-config.yaml: YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ2EnCmJhc2VEb21haW46IGEKY29udHJvbFBsYW5lOgogIGh5cGVydGhyZWFkaW5nOiBFbmFibGVkCiAgbmFtZTogbWFzdGVyCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGF3czoKICAgICAgcm9vdFZvbHVtZToKICAgICAgICBpb3BzOiA0MDAwCiAgICAgICAgc2l6ZTogMTAwCiAgICAgICAgdHlwZTogaW8xCiAgICAgIHR5cGU6IG01LnhsYXJnZQpjb21wdXRlOgotIGh5cGVydGhyZWFkaW5nOiBFbmFibGVkCiAgbmFtZTogJ3dvcmtlcicKICByZXBsaWNhczogMwogIHBsYXRmb3JtOgogICAgYXdzOgogICAgICByb290Vm9sdW1lOgogICAgICAgIGlvcHM6IDIwMDAKICAgICAgICBzaXplOiAxMDAKICAgICAgICB0eXBlOiBpbzEKICAgICAgdHlwZTogbTUueGxhcmdlCm5ldHdvcmtpbmc6CiAgbmV0d29ya1R5cGU6IE9wZW5TaGlmdFNETgogIGNsdXN0ZXJOZXR3b3JrOgogIC0gY2lkcjogMTAuMTI4LjAuMC8xNAogICAgaG9zdFByZWZpeDogMjMKICBtYWNoaW5lTmV0d29yazoKICAtIGNpZHI6IDEwLjAuMC4wLzE2CiAgc2VydmljZU5ldHdvcms6CiAgLSAxNzIuMzAuMC4wLzE2CnBsYXRmb3JtOgogIGF3czoKICAgIHJlZ2lvbjogdXMtZWFzdC0xCnB1bGxTZWNyZXQ6ICIiICMgc2tpcCwgaGl2ZSB3aWxsIGluamVjdCBiYXNlZCBvbiBpdCdzIHNlY3JldHMK
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: a-aws-creds
+  namespace: hoh-test
+  annotations:
+    hub-of-hubs.open-cluster-management.io/secret: "true"
+stringData:
+  aws_access_key_id:
+  aws_secret_access_key:
