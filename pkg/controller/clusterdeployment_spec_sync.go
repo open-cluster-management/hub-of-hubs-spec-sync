@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	controllerName = "clusterdeployment-spec-synce"
+	controllerName = "clusterdeployment-spec-syncer"
 	componentName  = "clusterdeployments"
 )
 
