@@ -7,6 +7,10 @@
 
 The spec sync component of [Hub-of-Hubs](https://github.com/open-cluster-management/hub-of-hubs).
 
+Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
+
+## Getting Started
+
 ## Environment variables
 
 The following environment variables are required for the most tasks below:
