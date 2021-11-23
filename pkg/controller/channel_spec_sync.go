@@ -40,6 +40,7 @@ func addChannelController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool
 			createInstance:         func() object { return &chanv1.Channel{} },
 			cleanStatus:            cleanChannelStatus,
 			areEqual:               areChannelsEqual,
+			shouldProcess:          ownerReferenceFilterFunc,
 		})
 	if err != nil {
 		return fmt.Errorf("failed to add Channel Controller to the manager: %w", err)

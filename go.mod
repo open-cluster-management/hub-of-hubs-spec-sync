@@ -4,9 +4,11 @@ go 1.16
 
 require (
 	github.com/go-logr/logr v0.4.0
+	github.com/go-test/deep v1.0.7 // indirect
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/open-cluster-management/governance-policy-propagator v0.0.0-20210520203318-a78632de1e26
-	github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.1.0
+	github.com/open-cluster-management/hub-of-hubs-data-types v0.1.1-0.20211025070346-60d0cacb5152 // indirect
+	github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.1.1-0.20211025070346-60d0cacb5152
 	github.com/open-cluster-management/multicloud-operators-channel v1.0.1-0.20201120143200-e505a259de45
 	github.com/open-cluster-management/multicloud-operators-subscription v1.2.2-2-20201130-59f96
 	golang.org/x/tools v0.1.5 // indirect

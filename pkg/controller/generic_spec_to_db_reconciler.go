@@ -29,6 +29,7 @@ type genericSpecToDBReconciler struct {
 	createInstance         func() object
 	cleanStatus            func(object)
 	areEqual               func(object, object) bool
+	shouldProcess          func(object) bool
 }
 
 type object interface {
@@ -97,6 +98,10 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 
 	if isInstanceBeingDeleted(instance) {
 		return "", nil, r.removeFinalizerAndDelete(ctx, instance, log)
+	}
+
+	if r.shouldProcess != nil && r.shouldProcess(instance) {
+		return "", nil, nil
 	}
 
 	err = r.addFinalizer(ctx, instance, log)
