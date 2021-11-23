@@ -3,9 +3,14 @@
 # Hub-of-Hubs Spec Sync
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/open-cluster-management/hub-of-hubs-spec-sync)](https://goreportcard.com/report/github.com/open-cluster-management/hub-of-hubs-spec-sync)
+[![Go Reference](https://pkg.go.dev/badge/github.com/open-cluster-management/hub-of-hubs-spec-sync.svg)](https://pkg.go.dev/github.com/open-cluster-management/hub-of-hubs-spec-sync)
 [![License](https://img.shields.io/github/license/open-cluster-management/hub-of-hubs-spec-sync)](/LICENSE)
 
 The spec sync component of [Hub-of-Hubs](https://github.com/open-cluster-management/hub-of-hubs).
+
+Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
+
+## Getting Started
 
 ## Environment variables
 
@@ -25,7 +30,7 @@ make build
 Disable the currently running controller in the cluster (if previously deployed):
 
 ```
-kubectl scale deployment hub-of-hubs-spec-sync --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management --replicas 0
+kubectl scale deployment hub-of-hubs-spec-sync -n open-cluster-management --replicas 0
 ```
 
 Set the following environment variables:
@@ -61,11 +66,11 @@ make build-images
 1.  Create a secret with your database url:
 
     ```
-    kubectl create secret generic hub-of-hubs-database-secret --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management --from-literal=url=$DATABASE_URL
+    kubectl create secret generic hub-of-hubs-database-secret -n open-cluster-management --from-literal=url=$DATABASE_URL
     ```
 
 1.  Deploy the operator:
 
     ```
-    COMPONENT=$(basename $(pwd)) envsubst < deploy/operator.yaml.template | kubectl apply --kubeconfig $TOP_HUB_CONFIG -n open-cluster-management -f -
+    COMPONENT=$(basename $(pwd)) envsubst < deploy/operator.yaml.template | kubectl apply -n open-cluster-management -f -
     ```

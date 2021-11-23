@@ -17,6 +17,8 @@ spec:
       containers:
         - name: ${COMPONENT}
           image: ${REGISTRY}/${COMPONENT}:${IMAGE_TAG}
+          args:
+            - '--zap-devel=true'
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
