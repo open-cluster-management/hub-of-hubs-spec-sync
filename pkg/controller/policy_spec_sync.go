@@ -10,6 +10,7 @@ import (
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	"github.com/open-cluster-management/governance-policy-propagator/controllers/common"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
@@ -21,7 +22,7 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 			log:                    ctrl.Log.WithName("policy-spec-syncer"),
 			tableName:              "policies",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/policy-cleanup",
-			createInstance:         func() object { return &policiesv1.Policy{} },
+			createInstance:         func() client.Object { return &policiesv1.Policy{} },
 			cleanStatus:            cleanPolicyStatus,
 			areEqual:               arePoliciesEqual,
 		})
@@ -32,7 +33,7 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 	return nil
 }
 
-func cleanPolicyStatus(instance object) {
+func cleanPolicyStatus(instance client.Object) {
 	policy, ok := instance.(*policiesv1.Policy)
 
 	if !ok {
@@ -42,7 +43,7 @@ func cleanPolicyStatus(instance object) {
 	policy.Status = policiesv1.PolicyStatus{}
 }
 
-func arePoliciesEqual(instance1, instance2 object) bool {
+func arePoliciesEqual(instance1, instance2 client.Object) bool {
 	policy1, ok1 := instance1.(*policiesv1.Policy)
 	policy2, ok2 := instance2.(*policiesv1.Policy)
 

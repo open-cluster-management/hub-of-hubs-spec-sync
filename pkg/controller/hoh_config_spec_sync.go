@@ -30,7 +30,7 @@ func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxp
 			log:                    ctrl.Log.WithName("hoh-config-spec-syncer"),
 			tableName:              "configs",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/hoh-config-cleanup",
-			createInstance:         func() object { return &configv1.Config{} },
+			createInstance:         func() client.Object { return &configv1.Config{} },
 			cleanStatus:            cleanConfigStatus,
 			areEqual:               areConfigsEqual,
 		})
@@ -41,7 +41,7 @@ func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxp
 	return nil
 }
 
-func cleanConfigStatus(instance object) {
+func cleanConfigStatus(instance client.Object) {
 	config, ok := instance.(*configv1.Config)
 
 	if !ok {
@@ -51,7 +51,7 @@ func cleanConfigStatus(instance object) {
 	config.Status = configv1.ConfigStatus{}
 }
 
-func areConfigsEqual(instance1, instance2 object) bool {
+func areConfigsEqual(instance1, instance2 client.Object) bool {
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
 	config1, ok1 := instance1.(*configv1.Config)

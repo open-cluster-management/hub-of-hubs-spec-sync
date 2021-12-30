@@ -10,6 +10,7 @@ import (
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
@@ -21,7 +22,7 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 			log:                    ctrl.Log.WithName("placementbinding-spec-syncer"),
 			tableName:              "placementbindings",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementbinding-cleanup",
-			createInstance:         func() object { return &policiesv1.PlacementBinding{} },
+			createInstance:         func() client.Object { return &policiesv1.PlacementBinding{} },
 			cleanStatus:            cleanPlacementBindingStatus,
 			areEqual:               arePlacementBindingsEqual,
 		})
@@ -32,7 +33,7 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 	return nil
 }
 
-func cleanPlacementBindingStatus(instance object) {
+func cleanPlacementBindingStatus(instance client.Object) {
 	placementBinding, ok := instance.(*policiesv1.PlacementBinding)
 
 	if !ok {
@@ -42,7 +43,7 @@ func cleanPlacementBindingStatus(instance object) {
 	placementBinding.Status = policiesv1.PlacementBindingStatus{}
 }
 
-func arePlacementBindingsEqual(instance1, instance2 object) bool {
+func arePlacementBindingsEqual(instance1, instance2 client.Object) bool {
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
 	placementBinding1, ok1 := instance1.(*policiesv1.PlacementBinding)
