@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
-	"github.com/open-cluster-management/governance-policy-propagator/pkg/controller/common"
+	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
+	"github.com/open-cluster-management/governance-policy-propagator/controllers/common"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 

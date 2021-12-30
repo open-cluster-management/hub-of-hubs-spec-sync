@@ -38,11 +38,9 @@ type object interface {
 
 const requeuePeriodSeconds = 5
 
-func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
+func (r *genericSpecToDBReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := r.log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info(fmt.Sprintf("Reconciling %s ...", r.tableName))
-
-	ctx := context.Background()
 
 	instanceUID, instance, err := r.processCR(ctx, request, reqLogger)
 	if err != nil {
