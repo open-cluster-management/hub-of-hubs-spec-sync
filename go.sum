@@ -92,8 +92,8 @@ github.com/open-cluster-management/api v0.0.0-20210527013639-a6845f2ebcb1 h1:AaF
 github.com/open-cluster-management/api v0.0.0-20210527013639-a6845f2ebcb1/go.mod h1:ot+A1DWq+v1IV+e1S7nhIteYAmNByFgtazvzpoeAfRQ=
 github.com/open-cluster-management/governance-policy-propagator v0.0.0-20211209195740-297c4b4e4fbc h1:572R5lrxb1KDWTDmLb9b/7uPrRqDHeLkgYbqnwFEGsY=
 github.com/open-cluster-management/governance-policy-propagator v0.0.0-20211209195740-297c4b4e4fbc/go.mod h1:BeU1IeeQCcmHK1CGlNBkea8VDoh0CpPxwGTY7u4h+0o=
-github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.3.0 h1:d1yLzNfFTkgo8jPjy5BnVb353A2ivz7e/7nC0D8nP6o=
-github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.3.0/go.mod h1:7+Og458oTPficF7a3poyfTRKssDH3oDpGH9P78fb+ms=
+github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.3.0 h1:F7VTIyk3Hcxc3MrC/2VHbpKq8JOSFXXdIfdGmFWeDVE=
+github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.3.0/go.mod h1:StVVjigk9jC6+62oJ4n9DOHVAFI88SZAeDWAM4+UU3s=
 github.com/open-cluster-management/multicloud-operators-placementrule v1.2.4-0-20210816-699e5 h1:u5Du//c1Gzv9liDsHLVJefQ9zwGSEcwSeOIv6jJjTOI=
 github.com/open-cluster-management/multicloud-operators-placementrule v1.2.4-0-20210816-699e5/go.mod h1:qB8YBquVYtr/h/U7DTGL+GwXPxuIinX4OpLW3s86xGY=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
