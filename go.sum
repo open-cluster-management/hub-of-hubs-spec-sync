@@ -553,8 +553,8 @@ github.com/open-cluster-management/api v0.0.0-20210527013639-a6845f2ebcb1/go.mod
 github.com/open-cluster-management/go-template-utils v1.3.0/go.mod h1:+D8buOYN/VMVuTEd8WnnJQn+Z1oU4sT2OXbYZE+mIDk=
 github.com/open-cluster-management/governance-policy-propagator v0.0.0-20211209195740-297c4b4e4fbc h1:572R5lrxb1KDWTDmLb9b/7uPrRqDHeLkgYbqnwFEGsY=
 github.com/open-cluster-management/governance-policy-propagator v0.0.0-20211209195740-297c4b4e4fbc/go.mod h1:BeU1IeeQCcmHK1CGlNBkea8VDoh0CpPxwGTY7u4h+0o=
-github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.2.3 h1:eaj61sBT/bbVkfFcS11j2hillt6l7rBHenFmkLzAouU=
-github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.2.3/go.mod h1:xpGxw+0si9vuDABvcJ9FxjznPw/uAbICzhaX+9JLLho=
+github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.3.0 h1:d1yLzNfFTkgo8jPjy5BnVb353A2ivz7e/7nC0D8nP6o=
+github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.3.0/go.mod h1:7+Og458oTPficF7a3poyfTRKssDH3oDpGH9P78fb+ms=
 github.com/open-cluster-management/klusterlet-addon-controller v0.0.0-20210303215539-1d12cebe6f19/go.mod h1:YWcjLe+zqmdqPFvwzASizCa8JdXe5briBgxoP+r3CRM=
 github.com/open-cluster-management/library-e2e-go v0.0.0-20200620112055-c80fc3c14997/go.mod h1:glvUOJg5EAb1Lq0OPcYhl57PJTxN2T5xuSfdV3Iab4Y=
 github.com/open-cluster-management/library-go v0.0.0-20200828173847-299c21e6c3fc/go.mod h1:X9KdKajEnrx6+LQSjo+61gLdk4Ntmwp+YEYD0CIJT7I=
