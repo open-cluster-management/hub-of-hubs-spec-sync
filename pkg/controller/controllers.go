@@ -8,8 +8,8 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
-	configv1 "github.com/open-cluster-management/hub-of-hubs-data-types/apis/config/v1"
 	appsv1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
+	configv1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
