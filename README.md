@@ -2,11 +2,11 @@
 
 # Hub-of-Hubs Spec Sync
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/open-cluster-management/hub-of-hubs-spec-sync)](https://goreportcard.com/report/github.com/open-cluster-management/hub-of-hubs-spec-sync)
-[![Go Reference](https://pkg.go.dev/badge/github.com/open-cluster-management/hub-of-hubs-spec-sync.svg)](https://pkg.go.dev/github.com/open-cluster-management/hub-of-hubs-spec-sync)
-[![License](https://img.shields.io/github/license/open-cluster-management/hub-of-hubs-spec-sync)](/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/stolostron/hub-of-hubs-spec-sync)](https://goreportcard.com/report/github.com/stolostron/hub-of-hubs-spec-sync)
+[![Go Reference](https://pkg.go.dev/badge/github.com/stolostron/hub-of-hubs-spec-sync.svg)](https://pkg.go.dev/github.com/stolostron/hub-of-hubs-spec-sync)
+[![License](https://img.shields.io/github/license/stolostron/hub-of-hubs-spec-sync)](/LICENSE)
 
-The spec sync component of [Hub-of-Hubs](https://github.com/open-cluster-management/hub-of-hubs).
+The spec sync component of [Hub-of-Hubs](https://github.com/stolostron/hub-of-hubs).
 
 Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 

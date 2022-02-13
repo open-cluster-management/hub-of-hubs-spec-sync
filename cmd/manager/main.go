@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/open-cluster-management/hub-of-hubs-spec-sync/pkg/controller"
+	"github.com/stolostron/hub-of-hubs-spec-sync/pkg/controller"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	_ "k8s.io/client-go/plugin/pkg/client/auth"

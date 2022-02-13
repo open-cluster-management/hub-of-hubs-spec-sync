@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	configv1 "github.com/open-cluster-management/hub-of-hubs-data-types/apis/config/v1"
+	configv1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
 	client "sigs.k8s.io/controller-runtime/pkg/client"

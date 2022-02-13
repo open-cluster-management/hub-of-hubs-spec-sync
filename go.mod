@@ -1,4 +1,4 @@
-module github.com/open-cluster-management/hub-of-hubs-spec-sync
+module github.com/stolostron/hub-of-hubs-spec-sync
 
 go 1.17
 
@@ -6,7 +6,7 @@ require (
 	github.com/go-logr/logr v0.4.0
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/open-cluster-management/governance-policy-propagator v0.0.0-20211209195740-297c4b4e4fbc
-	github.com/open-cluster-management/hub-of-hubs-data-types/apis/config v0.3.0
+	github.com/stolostron/hub-of-hubs-data-types/apis/config v0.3.1
 	github.com/open-cluster-management/multicloud-operators-placementrule v1.2.4-0-20210816-699e5
 	k8s.io/apimachinery v0.21.3
 	k8s.io/client-go v12.0.0+incompatible
