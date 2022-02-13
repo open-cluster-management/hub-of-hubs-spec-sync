@@ -7,9 +7,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	appsv1 "sigs.k8s.io/application/api/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func areApplicationsEqual(instance1, instance2 object) bool {
+func areApplicationsEqual(instance1, instance2 client.Object) bool {
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
 	application1, ok1 := instance1.(*appsv1.Application)
@@ -28,7 +29,7 @@ func addApplicationController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.
 			log:                    ctrl.Log.WithName("application-spec-syncer"),
 			tableName:              "applications",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/application-cleanup",
-			createInstance:         func() object { return &appsv1.Application{} },
+			createInstance:         func() client.Object { return &appsv1.Application{} },
 			cleanStatus:            cleanApplicationStatus,
 			areEqual:               areApplicationsEqual,
 		})
@@ -39,7 +40,7 @@ func addApplicationController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.
 	return nil
 }
 
-func cleanApplicationStatus(instance object) {
+func cleanApplicationStatus(instance client.Object) {
 	application, ok := instance.(*appsv1.Application)
 	if !ok {
 		panic("wrong instance passed to cleanConfigStatus: not appsv1.Application")

@@ -7,10 +7,10 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	appsv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/apps/v1"
-	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/pkg/apis/policy/v1"
+	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	configv1 "github.com/open-cluster-management/hub-of-hubs-data-types/apis/config/v1"
 	chanv1 "github.com/open-cluster-management/multicloud-operators-channel/pkg/apis/apps/v1"
+	appsv1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	subv1 "github.com/open-cluster-management/multicloud-operators-subscription/pkg/apis/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	applicationv1 "sigs.k8s.io/application/api/v1beta1"
@@ -19,14 +19,14 @@ import (
 )
 
 // AddToScheme adds all the resources to be processed to the Scheme.
-func AddToScheme(s *runtime.Scheme) error {
+func AddToScheme(sch *runtime.Scheme) error {
 	schemeBuilders := []*scheme.Builder{
 		policiesv1.SchemeBuilder, appsv1.SchemeBuilder, configv1.SchemeBuilder,
 		applicationv1.SchemeBuilder, chanv1.SchemeBuilder, subv1.SchemeBuilder,
 	}
 
 	for _, schemeBuilder := range schemeBuilders {
-		if err := schemeBuilder.AddToScheme(s); err != nil {
+		if err := schemeBuilder.AddToScheme(sch); err != nil {
 			return fmt.Errorf("failed to add scheme: %w", err)
 		}
 	}

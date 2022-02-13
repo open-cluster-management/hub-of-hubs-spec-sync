@@ -13,8 +13,6 @@ import (
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -26,24 +24,17 @@ type genericSpecToDBReconciler struct {
 	databaseConnectionPool *pgxpool.Pool
 	tableName              string
 	finalizerName          string
-	createInstance         func() object
-	cleanStatus            func(object)
-	areEqual               func(object, object) bool
-	shouldProcess          func(object) bool
-}
-
-type object interface {
-	metav1.Object
-	runtime.Object
+	createInstance         func() client.Object
+	cleanStatus            func(client.Object)
+	areEqual               func(client.Object, client.Object) bool
+	shouldProcess          func(client.Object) bool
 }
 
 const requeuePeriodSeconds = 5
 
-func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
+func (r *genericSpecToDBReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := r.log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info(fmt.Sprintf("Reconciling %s ...", r.tableName))
-
-	ctx := context.Background()
 
 	instanceUID, instance, err := r.processCR(ctx, request, reqLogger)
 	if err != nil {
@@ -83,7 +74,7 @@ func (r *genericSpecToDBReconciler) Reconcile(request ctrl.Request) (ctrl.Result
 }
 
 func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.Request,
-	log logr.Logger) (string, object, error) {
+	log logr.Logger) (string, client.Object, error) {
 	instance := r.createInstance()
 
 	err := r.client.Get(ctx, request.NamespacedName, instance)
@@ -100,7 +91,7 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 		return "", nil, r.removeFinalizerAndDelete(ctx, instance, log)
 	}
 
-	if r.shouldProcess != nil && r.shouldProcess(instance) {
+	if r.shouldProcess != nil && !r.shouldProcess(instance) {
 		return "", nil, nil
 	}
 
@@ -109,11 +100,11 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 	return string(instance.GetUID()), r.cleanInstance(instance), err
 }
 
-func isInstanceBeingDeleted(instance object) bool {
+func isInstanceBeingDeleted(instance client.Object) bool {
 	return !instance.GetDeletionTimestamp().IsZero()
 }
 
-func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context, instance object,
+func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context, instance client.Object,
 	log logr.Logger) error {
 	if !controllerutil.ContainsFinalizer(instance, r.finalizerName) {
 		return nil
@@ -136,7 +127,7 @@ func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context
 	return nil
 }
 
-func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance object, log logr.Logger) error {
+func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance client.Object, log logr.Logger) error {
 	if controllerutil.ContainsFinalizer(instance, r.finalizerName) {
 		return nil
 	}
@@ -151,8 +142,8 @@ func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance o
 	return nil
 }
 
-func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Context, instance object,
-	instanceUID string, log logr.Logger) (object, error) {
+func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Context, instance client.Object,
+	instanceUID string, log logr.Logger) (client.Object, error) {
 	instanceInTheDatabase := r.createInstance()
 	err := r.databaseConnectionPool.QueryRow(ctx,
 		fmt.Sprintf("SELECT payload FROM spec.%s WHERE id = $1", r.tableName),
@@ -180,7 +171,7 @@ func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Con
 	return instanceInTheDatabase, nil
 }
 
-func (r *genericSpecToDBReconciler) cleanInstance(instance object) object {
+func (r *genericSpecToDBReconciler) cleanInstance(instance client.Object) client.Object {
 	instance.SetUID("")
 	instance.SetResourceVersion("")
 	instance.SetManagedFields(nil)

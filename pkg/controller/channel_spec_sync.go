@@ -7,9 +7,10 @@ import (
 	chanv1 "github.com/open-cluster-management/multicloud-operators-channel/pkg/apis/apps/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func cleanChannelStatus(instance object) {
+func cleanChannelStatus(instance client.Object) {
 	channel, ok := instance.(*chanv1.Channel)
 	if !ok {
 		panic("wrong instance passed to cleanConfigStatus: not chanv1.Channel")
@@ -18,7 +19,7 @@ func cleanChannelStatus(instance object) {
 	channel.Status = chanv1.ChannelStatus{}
 }
 
-func areChannelsEqual(instance1, instance2 object) bool {
+func areChannelsEqual(instance1, instance2 client.Object) bool {
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
 	channel1, ok1 := instance1.(*chanv1.Channel)
@@ -37,10 +38,10 @@ func addChannelController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool
 			log:                    ctrl.Log.WithName("channel-spec-syncer"),
 			tableName:              "channels",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/channel-cleanup",
-			createInstance:         func() object { return &chanv1.Channel{} },
+			createInstance:         func() client.Object { return &chanv1.Channel{} },
 			cleanStatus:            cleanChannelStatus,
 			areEqual:               areChannelsEqual,
-			shouldProcess:          ownerReferenceFilterFunc,
+			shouldProcess:          namespaceFilterFunc,
 		})
 	if err != nil {
 		return fmt.Errorf("failed to add Channel Controller to the manager: %w", err)
