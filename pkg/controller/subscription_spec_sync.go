@@ -55,7 +55,5 @@ func cleanSubscriptionStatus(instance client.Object) {
 }
 
 func namespaceFilterFunc(instance client.Object) bool {
-	ctrl.Log.WithName("ASDASDASDASD").Info(fmt.Sprintf("%s and is %t", instance.GetName(),
-		!(instance.GetNamespace() == NamespaceToSkip)))
 	return !(instance.GetNamespace() == NamespaceToSkip)
 }
