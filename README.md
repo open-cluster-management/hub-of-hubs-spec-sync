@@ -10,6 +10,10 @@ The spec sync component of [Hub-of-Hubs](https://github.com/stolostron/hub-of-hu
 
 Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
+## The reconciliation flow
+
+![Reconciliation Flow](HohSpecSyncFlowChart.svg)
+
 ## Getting Started
 
 ## Environment variables
