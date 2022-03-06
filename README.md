@@ -10,6 +10,10 @@ The spec sync component of [Hub-of-Hubs](https://github.com/stolostron/hub-of-hu
 
 Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
+## The dependencies chart
+
+![Dependencies](dependencies.svg)
+
 ## The reconciliation flow
 
 ![Reconciliation Flow](HohSpecSyncFlowChart.svg)
