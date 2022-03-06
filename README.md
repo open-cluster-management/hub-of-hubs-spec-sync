@@ -12,11 +12,11 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 ## The dependencies chart
 
-![Dependencies](dependencies.svg)
+![Dependencies](diagrams/dependencies.svg)
 
 ## The reconciliation flow
 
-![Reconciliation Flow](HohSpecSyncFlowChart.svg)
+![Reconciliation Flow](diagrams/flowchart.svg)
 
 ## Getting Started
 
