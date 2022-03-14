@@ -27,7 +27,6 @@ type genericSpecToDBReconciler struct {
 	createInstance         func() client.Object
 	cleanStatus            func(client.Object)
 	areEqual               func(client.Object, client.Object) bool
-	shouldProcess          func(client.Object) bool
 }
 
 const requeuePeriodSeconds = 5
@@ -89,10 +88,6 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 
 	if isInstanceBeingDeleted(instance) {
 		return "", nil, r.removeFinalizerAndDelete(ctx, instance, log)
-	}
-
-	if r.shouldProcess != nil && !r.shouldProcess(instance) {
-		return "", nil, nil
 	}
 
 	err = r.addFinalizer(ctx, instance, log)

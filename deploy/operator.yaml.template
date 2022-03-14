@@ -103,14 +103,6 @@ rules:
   - "apps.open-cluster-management.io"
   resources:
   - subscriptions
-  verbs:
-  - get
-  - list
-  - watch
-  - update
-- apiGroups:
-  - "apps.open-cluster-management.io"
-  resources:
   - channels
   verbs:
   - get
