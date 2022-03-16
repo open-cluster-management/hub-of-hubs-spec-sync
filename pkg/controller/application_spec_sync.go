@@ -33,7 +33,7 @@ func addApplicationController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.
 func cleanApplicationStatus(instance client.Object) {
 	application, ok := instance.(*appsv1beta1.Application)
 	if !ok {
-		panic("wrong instance passed to cleanApplicationStatus: not appsv1beta1.Application")
+		panic("wrong instance passed to cleanApplicationStatus: not an Application")
 	}
 
 	application.Status = appsv1beta1.ApplicationStatus{}

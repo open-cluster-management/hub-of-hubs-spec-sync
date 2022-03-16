@@ -45,7 +45,7 @@ func areSubscriptionsEqual(instance1, instance2 client.Object) bool {
 func cleanSubscriptionStatus(instance client.Object) {
 	subscription, ok := instance.(*subscriptionsv1.Subscription)
 	if !ok {
-		panic("wrong instance passed to cleanSubscriptionStatus: not subscriptionsv1.Subscription")
+		panic("wrong instance passed to cleanSubscriptionStatus: not a Subscription")
 	}
 
 	subscription.Status = subscriptionsv1.SubscriptionStatus{}
