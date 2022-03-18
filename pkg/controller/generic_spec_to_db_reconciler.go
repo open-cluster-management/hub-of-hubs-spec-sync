@@ -33,6 +33,7 @@ type genericSpecToDBReconciler struct {
 const (
 	requeuePeriodSeconds = 5
 	hubOfHubsLocalPolicy = "hub-of-hubs.open-cluster-management.io/local-policy"
+	rootPolicy           = "policy.open-cluster-management.io/root-policy"
 )
 
 func (r *genericSpecToDBReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {

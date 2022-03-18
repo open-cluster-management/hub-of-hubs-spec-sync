@@ -60,6 +60,10 @@ func processPolicyInstance(instance client.Object) client.Object {
 		return nil
 	}
 
+	if _, ok := annotations[rootPolicy]; ok {
+		return nil
+	}
+
 	return instance
 }
 
