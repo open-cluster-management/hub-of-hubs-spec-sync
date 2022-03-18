@@ -25,11 +25,15 @@ type genericSpecToDBReconciler struct {
 	tableName              string
 	finalizerName          string
 	createInstance         func() client.Object
+	processInstance        func(client.Object) client.Object
 	cleanStatus            func(client.Object)
 	areEqual               func(client.Object, client.Object) bool
 }
 
-const requeuePeriodSeconds = 5
+const (
+	requeuePeriodSeconds = 5
+	hubOfHubsLocalPolicy = "hub-of-hubs.open-cluster-management.io/local-policy"
+)
 
 func (r *genericSpecToDBReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := r.log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
@@ -84,6 +88,10 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to get the instance from hub: %w", err)
+	}
+
+	if r.processInstance != nil && r.processInstance(instance) == nil {
+		return "", nil, nil
 	}
 
 	if isInstanceBeingDeleted(instance) {

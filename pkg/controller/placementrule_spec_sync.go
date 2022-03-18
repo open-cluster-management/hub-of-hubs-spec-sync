@@ -23,6 +23,7 @@ func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 			tableName:              "placementrules",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementrule-cleanup",
 			createInstance:         func() client.Object { return &appsv1.PlacementRule{} },
+			processInstance:        processPlacementRuleInstance,
 			cleanStatus:            cleanPlacementRuleStatus,
 			areEqual:               arePlacementRulesEqual,
 		})
@@ -31,6 +32,25 @@ func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 	}
 
 	return nil
+}
+
+func processPlacementRuleInstance(instance client.Object) client.Object {
+	policy, ok := instance.(*appsv1.PlacementRule)
+
+	if !ok {
+		panic("wrong instance passed to processPlacementRuleInstance: not appsv1.PlacementRule")
+	}
+
+	annotations := policy.GetAnnotations()
+	if annotations == nil {
+		return instance
+	}
+
+	if _, ok := annotations[hubOfHubsLocalPolicy]; ok {
+		return nil
+	}
+
+	return instance
 }
 
 func cleanPlacementRuleStatus(instance client.Object) {

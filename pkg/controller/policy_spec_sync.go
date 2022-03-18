@@ -23,6 +23,7 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 			tableName:              "policies",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/policy-cleanup",
 			createInstance:         func() client.Object { return &policiesv1.Policy{} },
+			processInstance:        processPolicyInstance,
 			cleanStatus:            cleanPolicyStatus,
 			areEqual:               arePoliciesEqual,
 		})
@@ -41,6 +42,25 @@ func cleanPolicyStatus(instance client.Object) {
 	}
 
 	policy.Status = policiesv1.PolicyStatus{}
+}
+
+func processPolicyInstance(instance client.Object) client.Object {
+	policy, ok := instance.(*policiesv1.Policy)
+
+	if !ok {
+		panic("wrong instance passed to processPolicyInstance: not policiesv1.Policy")
+	}
+
+	annotations := policy.GetAnnotations()
+	if annotations == nil {
+		return instance
+	}
+
+	if _, ok := annotations[hubOfHubsLocalPolicy]; ok {
+		return nil
+	}
+
+	return instance
 }
 
 func arePoliciesEqual(instance1, instance2 client.Object) bool {
