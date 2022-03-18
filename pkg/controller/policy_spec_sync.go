@@ -51,12 +51,17 @@ func processPolicyInstance(instance client.Object) client.Object {
 		panic("wrong instance passed to processPolicyInstance: not policiesv1.Policy")
 	}
 
+	annotations := policy.GetAnnotations()
+	if annotations == nil {
+		return instance
+	}
+	if _, ok := annotations[hubOfHubsLocalPolicy]; ok {
+		return nil
+	}
+
 	labels := policy.GetLabels()
 	if labels == nil {
 		return instance
-	}
-	if _, ok := labels[hubOfHubsLocalPolicy]; ok {
-		return nil
 	}
 	if _, ok := labels[rootPolicy]; ok {
 		return nil
