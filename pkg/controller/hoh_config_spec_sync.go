@@ -19,7 +19,7 @@ const (
 )
 
 func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	err := ctrl.NewControllerManagedBy(mgr).
+	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&configv1.Config{}).
 		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
 			return object.GetNamespace() == hohSystemNamespace
@@ -33,9 +33,8 @@ func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxp
 			createInstance:         func() client.Object { return &configv1.Config{} },
 			cleanStatus:            cleanConfigStatus,
 			areEqual:               areConfigsEqual,
-		})
-	if err != nil {
-		return fmt.Errorf("failed to add HubOfHubsConfig Controller to the manager: %w", err)
+		}); err != nil {
+		return fmt.Errorf("failed to add HubOfHubsConfig controller to the manager: %w", err)
 	}
 
 	return nil

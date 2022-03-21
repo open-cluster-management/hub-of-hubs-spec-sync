@@ -8,23 +8,25 @@ import (
 	channelsv1 "open-cluster-management.io/multicloud-operators-channel/pkg/apis/apps/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 func addChannelController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	controlBuilder := ctrl.NewControllerManagedBy(mgr).For(&channelsv1.Channel{})
-	controlBuilder = controlBuilder.WithEventFilter(generateNamespacePredicate())
-
-	err := controlBuilder.Complete(&genericSpecToDBReconciler{
-		client:                 mgr.GetClient(),
-		databaseConnectionPool: databaseConnectionPool,
-		log:                    ctrl.Log.WithName("channel-spec-syncer"),
-		tableName:              "channels",
-		finalizerName:          "hub-of-hubs.open-cluster-management.io/channel-cleanup",
-		createInstance:         func() client.Object { return &channelsv1.Channel{} },
-		cleanStatus:            cleanChannelStatus,
-		areEqual:               areChannelsEqual,
-	})
-	if err != nil {
+	if err := ctrl.NewControllerManagedBy(mgr).
+		For(&channelsv1.Channel{}).
+		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
+			return object.GetNamespace() != "open-cluster-management"
+		})).
+		Complete(&genericSpecToDBReconciler{
+			client:                 mgr.GetClient(),
+			databaseConnectionPool: databaseConnectionPool,
+			log:                    ctrl.Log.WithName("channel-spec-syncer"),
+			tableName:              "channels",
+			finalizerName:          "hub-of-hubs.open-cluster-management.io/channel-cleanup",
+			createInstance:         func() client.Object { return &channelsv1.Channel{} },
+			cleanStatus:            cleanChannelStatus,
+			areEqual:               areChannelsEqual,
+		}); err != nil {
 		return fmt.Errorf("failed to add channel controller to the manager: %w", err)
 	}
 
@@ -34,7 +36,7 @@ func addChannelController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool
 func cleanChannelStatus(instance client.Object) {
 	channel, ok := instance.(*channelsv1.Channel)
 	if !ok {
-		panic("wrong instance passed to cleanSubscriptionStatus: not channelsv1.Channel")
+		panic("wrong instance passed to cleanChannelStatus: not a Channel")
 	}
 
 	channel.Status = channelsv1.ChannelStatus{}

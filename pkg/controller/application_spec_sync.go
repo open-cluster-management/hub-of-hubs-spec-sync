@@ -11,7 +11,7 @@ import (
 )
 
 func addApplicationController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	err := ctrl.NewControllerManagedBy(mgr).
+	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1beta1.Application{}).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
@@ -22,8 +22,7 @@ func addApplicationController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.
 			createInstance:         func() client.Object { return &appsv1beta1.Application{} },
 			cleanStatus:            cleanApplicationStatus,
 			areEqual:               areApplicationsEqual,
-		})
-	if err != nil {
+		}); err != nil {
 		return fmt.Errorf("failed to add application controller to the manager: %w", err)
 	}
 

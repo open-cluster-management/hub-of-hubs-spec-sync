@@ -14,7 +14,7 @@ import (
 )
 
 func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	err := ctrl.NewControllerManagedBy(mgr).
+	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.Policy{}).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
@@ -25,9 +25,8 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 			createInstance:         func() client.Object { return &policiesv1.Policy{} },
 			cleanStatus:            cleanPolicyStatus,
 			areEqual:               arePoliciesEqual,
-		})
-	if err != nil {
-		return fmt.Errorf("failed to add PolicyController to the manager: %w", err)
+		}); err != nil {
+		return fmt.Errorf("failed to add Policy controller to the manager: %w", err)
 	}
 
 	return nil
@@ -37,7 +36,7 @@ func cleanPolicyStatus(instance client.Object) {
 	policy, ok := instance.(*policiesv1.Policy)
 
 	if !ok {
-		panic("wrong instance passed to cleanConfigStatus: not policiesv1.Policy")
+		panic("wrong instance passed to cleanPolicyStatus: not a Policy")
 	}
 
 	policy.Status = policiesv1.PolicyStatus{}

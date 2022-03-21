@@ -8,27 +8,38 @@ import (
 	subscriptionsv1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 func addSubscriptionController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	controlBuilder := ctrl.NewControllerManagedBy(mgr).For(&subscriptionsv1.Subscription{})
-	controlBuilder = controlBuilder.WithEventFilter(generateNamespacePredicate())
-
-	err := controlBuilder.Complete(&genericSpecToDBReconciler{
-		client:                 mgr.GetClient(),
-		databaseConnectionPool: databaseConnectionPool,
-		log:                    ctrl.Log.WithName("subscriptions-spec-syncer"),
-		tableName:              "subscriptions",
-		finalizerName:          "hub-of-hubs.open-cluster-management.io/subscription-cleanup",
-		createInstance:         func() client.Object { return &subscriptionsv1.Subscription{} },
-		cleanStatus:            cleanSubscriptionStatus,
-		areEqual:               areSubscriptionsEqual,
-	})
-	if err != nil {
+	if err := ctrl.NewControllerManagedBy(mgr).
+		For(&subscriptionsv1.Subscription{}).
+		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
+			return object.GetNamespace() != "open-cluster-management"
+		})).
+		Complete(&genericSpecToDBReconciler{
+			client:                 mgr.GetClient(),
+			databaseConnectionPool: databaseConnectionPool,
+			log:                    ctrl.Log.WithName("subscriptions-spec-syncer"),
+			tableName:              "subscriptions",
+			finalizerName:          "hub-of-hubs.open-cluster-management.io/subscription-cleanup",
+			createInstance:         func() client.Object { return &subscriptionsv1.Subscription{} },
+			cleanStatus:            cleanSubscriptionStatus,
+			areEqual:               areSubscriptionsEqual,
+		}); err != nil {
 		return fmt.Errorf("failed to add subscription controller to the manager: %w", err)
 	}
 
 	return nil
+}
+
+func cleanSubscriptionStatus(instance client.Object) {
+	subscription, ok := instance.(*subscriptionsv1.Subscription)
+	if !ok {
+		panic("wrong instance passed to cleanSubscriptionStatus: not a Subscription")
+	}
+
+	subscription.Status = subscriptionsv1.SubscriptionStatus{}
 }
 
 func areSubscriptionsEqual(instance1, instance2 client.Object) bool {
@@ -40,13 +51,4 @@ func areSubscriptionsEqual(instance1, instance2 client.Object) bool {
 	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(subscription1.Spec, subscription2.Spec)
 
 	return annotationMatch && specMatch
-}
-
-func cleanSubscriptionStatus(instance client.Object) {
-	subscription, ok := instance.(*subscriptionsv1.Subscription)
-	if !ok {
-		panic("wrong instance passed to cleanSubscriptionStatus: not a Subscription")
-	}
-
-	subscription.Status = subscriptionsv1.SubscriptionStatus{}
 }

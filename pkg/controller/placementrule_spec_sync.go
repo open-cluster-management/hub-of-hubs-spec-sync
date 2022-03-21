@@ -14,7 +14,7 @@ import (
 )
 
 func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	err := ctrl.NewControllerManagedBy(mgr).
+	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1.PlacementRule{}).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
@@ -25,9 +25,8 @@ func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 			createInstance:         func() client.Object { return &appsv1.PlacementRule{} },
 			cleanStatus:            cleanPlacementRuleStatus,
 			areEqual:               arePlacementRulesEqual,
-		})
-	if err != nil {
-		return fmt.Errorf("failed to add PlacementRule Controller to the manager: %w", err)
+		}); err != nil {
+		return fmt.Errorf("failed to add PlacementRule controller to the manager: %w", err)
 	}
 
 	return nil
@@ -37,7 +36,7 @@ func cleanPlacementRuleStatus(instance client.Object) {
 	placementRule, ok := instance.(*appsv1.PlacementRule)
 
 	if !ok {
-		panic("wrong instance passed to cleanConfigStatus: not appsv1.PlacementRule")
+		panic("wrong instance passed to cleanPlacementRuleStatus: not a PlacementRule")
 	}
 
 	placementRule.Status = appsv1.PlacementRuleStatus{}

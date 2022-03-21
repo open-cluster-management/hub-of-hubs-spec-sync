@@ -14,7 +14,7 @@ import (
 )
 
 func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
-	err := ctrl.NewControllerManagedBy(mgr).
+	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.PlacementBinding{}).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
@@ -25,9 +25,8 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 			createInstance:         func() client.Object { return &policiesv1.PlacementBinding{} },
 			cleanStatus:            cleanPlacementBindingStatus,
 			areEqual:               arePlacementBindingsEqual,
-		})
-	if err != nil {
-		return fmt.Errorf("failed to add PlacementBinding Controller to the manager: %w", err)
+		}); err != nil {
+		return fmt.Errorf("failed to add PlacementBinding controller to the manager: %w", err)
 	}
 
 	return nil
@@ -37,7 +36,7 @@ func cleanPlacementBindingStatus(instance client.Object) {
 	placementBinding, ok := instance.(*policiesv1.PlacementBinding)
 
 	if !ok {
-		panic("wrong instance passed to cleanConfigStatus: not policiesv1.PlacementBinding")
+		panic("wrong instance passed to cleanPlacementBindingStatus: not a PlacementBinding")
 	}
 
 	placementBinding.Status = policiesv1.PlacementBindingStatus{}
