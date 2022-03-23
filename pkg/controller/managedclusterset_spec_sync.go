@@ -1,0 +1,54 @@
+// Copyright (c) 2020 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
+
+package controller
+
+import (
+	"fmt"
+
+	"github.com/jackc/pgx/v4/pgxpool"
+	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/equality"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+func addManagedClusterSetController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
+	if err := ctrl.NewControllerManagedBy(mgr).
+		For(&clusterv1alpha1.ManagedClusterSet{}).
+		Complete(&genericSpecToDBReconciler{
+			client:                 mgr.GetClient(),
+			databaseConnectionPool: databaseConnectionPool,
+			log:                    ctrl.Log.WithName("managedclustersets-spec-syncer"),
+			tableName:              "managedclustersets",
+			finalizerName:          "hub-of-hubs.open-cluster-management.io/managedclustersets-cleanup",
+			createInstance:         func() client.Object { return &clusterv1alpha1.ManagedClusterSet{} },
+			cleanStatus:            cleanManagedClusterSetStatus,
+			areEqual:               areManagedClusterSetsEqual,
+		}); err != nil {
+		return fmt.Errorf("failed to add managed cluster set controller to the manager: %w", err)
+	}
+
+	return nil
+}
+
+func cleanManagedClusterSetStatus(instance client.Object) {
+	managedClusterSet, ok := instance.(*clusterv1alpha1.ManagedClusterSet)
+
+	if !ok {
+		panic("wrong instance passed to cleanManagedClusterSetStatus: not a ManagedClusterSet")
+	}
+
+	managedClusterSet.Status = clusterv1alpha1.ManagedClusterSetStatus{}
+}
+
+func areManagedClusterSetsEqual(instance1, instance2 client.Object) bool {
+	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
+
+	managedClusterSet1, ok1 := instance1.(*clusterv1alpha1.ManagedClusterSet)
+	managedClusterSet2, ok2 := instance2.(*clusterv1alpha1.ManagedClusterSet)
+
+	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(managedClusterSet1.Spec, managedClusterSet2.Spec)
+
+	return annotationMatch && specMatch
+}

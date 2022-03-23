@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/go-logr/logr v0.4.0
 	github.com/jackc/pgx/v4 v4.11.0
+	github.com/open-cluster-management/api v0.0.0-20210527013639-a6845f2ebcb1
 	github.com/open-cluster-management/governance-policy-propagator v0.0.0-20211209195740-297c4b4e4fbc
 	github.com/open-cluster-management/multicloud-operators-placementrule v1.2.4-0-20210816-699e5
 	github.com/stolostron/hub-of-hubs-data-types/apis/config v0.3.1
@@ -60,7 +61,6 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/open-cluster-management/api v0.0.0-20210527013639-a6845f2ebcb1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect

@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	placementrulesv1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	configv1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
@@ -19,11 +20,16 @@ import (
 )
 
 // AddToScheme adds all the resources to be processed to the Scheme.
-func AddToScheme(s *runtime.Scheme) error {
+func AddToScheme(scheme *runtime.Scheme) error {
 	for _, schemeBuilder := range getSchemeBuilders() {
-		if err := schemeBuilder.AddToScheme(s); err != nil {
+		if err := schemeBuilder.AddToScheme(scheme); err != nil {
 			return fmt.Errorf("failed to add scheme: %w", err)
 		}
+	}
+
+	// install clusterv1alpha1 scheme
+	if err := clusterv1alpha1.Install(scheme); err != nil {
+		return fmt.Errorf("failed to install scheme: %w", err)
 	}
 
 	return nil
@@ -42,6 +48,7 @@ func AddControllers(mgr ctrl.Manager, dbConnectionPool *pgxpool.Pool) error {
 		addPolicyController, addPlacementRuleController,
 		addPlacementBindingController, addHubOfHubsConfigController, addApplicationController,
 		addSubscriptionController, addChannelController,
+		addManagedClusterSetController, addManagedClusterSetBindingController, addPlacementController,
 	}
 
 	for _, addControllerFunction := range addControllerFunctions {
