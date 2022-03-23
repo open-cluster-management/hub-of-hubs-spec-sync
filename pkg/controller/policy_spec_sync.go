@@ -19,14 +19,14 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
-			log:                    ctrl.Log.WithName("policy-spec-syncer"),
+			log:                    ctrl.Log.WithName("policies-spec-syncer"),
 			tableName:              "policies",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/policy-cleanup",
 			createInstance:         func() client.Object { return &policiesv1.Policy{} },
 			cleanStatus:            cleanPolicyStatus,
 			areEqual:               arePoliciesEqual,
 		}); err != nil {
-		return fmt.Errorf("failed to add Policy controller to the manager: %w", err)
+		return fmt.Errorf("failed to add policy controller to the manager: %w", err)
 	}
 
 	return nil

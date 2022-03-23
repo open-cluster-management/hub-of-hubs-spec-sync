@@ -19,14 +19,14 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
-			log:                    ctrl.Log.WithName("placementbinding-spec-syncer"),
+			log:                    ctrl.Log.WithName("placementbindings-spec-syncer"),
 			tableName:              "placementbindings",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementbinding-cleanup",
 			createInstance:         func() client.Object { return &policiesv1.PlacementBinding{} },
 			cleanStatus:            cleanPlacementBindingStatus,
 			areEqual:               arePlacementBindingsEqual,
 		}); err != nil {
-		return fmt.Errorf("failed to add PlacementBinding controller to the manager: %w", err)
+		return fmt.Errorf("failed to add placement binding controller to the manager: %w", err)
 	}
 
 	return nil

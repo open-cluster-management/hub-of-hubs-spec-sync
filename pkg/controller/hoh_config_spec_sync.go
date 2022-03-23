@@ -27,14 +27,14 @@ func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxp
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
-			log:                    ctrl.Log.WithName("hoh-config-spec-syncer"),
+			log:                    ctrl.Log.WithName("hoh-configs-spec-syncer"),
 			tableName:              "configs",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/hoh-config-cleanup",
 			createInstance:         func() client.Object { return &configv1.Config{} },
 			cleanStatus:            cleanConfigStatus,
 			areEqual:               areConfigsEqual,
 		}); err != nil {
-		return fmt.Errorf("failed to add HubOfHubsConfig controller to the manager: %w", err)
+		return fmt.Errorf("failed to add hoh config controller to the manager: %w", err)
 	}
 
 	return nil

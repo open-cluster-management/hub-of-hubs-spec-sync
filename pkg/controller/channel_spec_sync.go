@@ -20,7 +20,7 @@ func addChannelController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
-			log:                    ctrl.Log.WithName("channel-spec-syncer"),
+			log:                    ctrl.Log.WithName("channels-spec-syncer"),
 			tableName:              "channels",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/channel-cleanup",
 			createInstance:         func() client.Object { return &channelsv1.Channel{} },

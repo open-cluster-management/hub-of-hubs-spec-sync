@@ -16,7 +16,7 @@ func addApplicationController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
-			log:                    ctrl.Log.WithName("application-spec-syncer"),
+			log:                    ctrl.Log.WithName("applications-spec-syncer"),
 			tableName:              "applications",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/application-cleanup",
 			createInstance:         func() client.Object { return &appsv1beta1.Application{} },

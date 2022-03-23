@@ -19,14 +19,14 @@ func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
-			log:                    ctrl.Log.WithName("placementrule-spec-syncer"),
+			log:                    ctrl.Log.WithName("placementrules-spec-syncer"),
 			tableName:              "placementrules",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementrule-cleanup",
 			createInstance:         func() client.Object { return &appsv1.PlacementRule{} },
 			cleanStatus:            cleanPlacementRuleStatus,
 			areEqual:               arePlacementRulesEqual,
 		}); err != nil {
-		return fmt.Errorf("failed to add PlacementRule controller to the manager: %w", err)
+		return fmt.Errorf("failed to add placement rule controller to the manager: %w", err)
 	}
 
 	return nil
