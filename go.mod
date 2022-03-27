@@ -11,6 +11,7 @@ require (
 	github.com/stolostron/hub-of-hubs-data-types/apis/config v0.3.1
 	k8s.io/apimachinery v0.21.3
 	k8s.io/client-go v12.0.0+incompatible
+	open-cluster-management.io/api v0.6.0
 	open-cluster-management.io/multicloud-operators-channel v0.6.0
 	open-cluster-management.io/multicloud-operators-subscription v0.6.0
 	sigs.k8s.io/application v0.8.3

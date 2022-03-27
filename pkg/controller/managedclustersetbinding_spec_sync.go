@@ -7,22 +7,22 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	clusterv1beta1 "open-cluster-management.io/api/cluster/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func addManagedClusterSetBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
-		For(&clusterv1alpha1.ManagedClusterSetBinding{}).
+		For(&clusterv1beta1.ManagedClusterSetBinding{}).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("managedclustersetbindings-spec-syncer"),
 			tableName:              "managedclustersetbindings",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/managedclustersetbindings-cleanup",
-			createInstance:         func() client.Object { return &clusterv1alpha1.ManagedClusterSetBinding{} },
+			createInstance:         func() client.Object { return &clusterv1beta1.ManagedClusterSetBinding{} },
 			cleanStatus:            cleanManagedClusterSetBindingsStatus,
 			areEqual:               areManagedClusterSetBindingsEqual,
 		}); err != nil {
@@ -33,7 +33,7 @@ func addManagedClusterSetBindingController(mgr ctrl.Manager, databaseConnectionP
 }
 
 func cleanManagedClusterSetBindingsStatus(instance client.Object) {
-	_, ok := instance.(*clusterv1alpha1.ManagedClusterSetBinding)
+	_, ok := instance.(*clusterv1beta1.ManagedClusterSetBinding)
 	// ManagedClusterSetBinding has no status
 	if !ok {
 		panic("wrong instance passed to cleanManagedClusterSetBindingsStatus: not a ManagedClusterSetBinding")
@@ -43,8 +43,8 @@ func cleanManagedClusterSetBindingsStatus(instance client.Object) {
 func areManagedClusterSetBindingsEqual(instance1, instance2 client.Object) bool {
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
-	managedClusterSetBinding1, ok1 := instance1.(*clusterv1alpha1.ManagedClusterSetBinding)
-	managedClusterSetBinding2, ok2 := instance2.(*clusterv1alpha1.ManagedClusterSetBinding)
+	managedClusterSetBinding1, ok1 := instance1.(*clusterv1beta1.ManagedClusterSetBinding)
+	managedClusterSetBinding2, ok2 := instance2.(*clusterv1beta1.ManagedClusterSetBinding)
 
 	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(managedClusterSetBinding1.Spec,
 		managedClusterSetBinding2.Spec)

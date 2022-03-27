@@ -12,6 +12,7 @@ import (
 	placementrulesv1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
 	configv1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	clusterv1beta1 "open-cluster-management.io/api/cluster/v1beta1"
 	channelsv1 "open-cluster-management.io/multicloud-operators-channel/pkg/apis/apps/v1"
 	subscriptionsv1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/v1"
 	applicationv1beta1 "sigs.k8s.io/application/api/v1beta1"
@@ -27,7 +28,11 @@ func AddToScheme(scheme *runtime.Scheme) error {
 		}
 	}
 
-	// install clusterv1alpha1 scheme
+	// install cluster v1alpha1 / v1beta1 schemes
+	if err := clusterv1beta1.Install(scheme); err != nil {
+		return fmt.Errorf("failed to install scheme: %w", err)
+	}
+
 	if err := clusterv1alpha1.Install(scheme); err != nil {
 		return fmt.Errorf("failed to install scheme: %w", err)
 	}
