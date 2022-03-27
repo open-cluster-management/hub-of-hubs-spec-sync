@@ -91,8 +91,7 @@ func doMain() int {
 }
 
 func createManager(leaderElectionNamespace, namespace, metricsHost string, metricsPort int32,
-	dbConnectionPool *pgxpool.Pool,
-) (ctrl.Manager, error) {
+	dbConnectionPool *pgxpool.Pool) (ctrl.Manager, error) {
 	options := ctrl.Options{
 		Namespace:               namespace,
 		MetricsBindAddress:      fmt.Sprintf("%s:%d", metricsHost, metricsPort),

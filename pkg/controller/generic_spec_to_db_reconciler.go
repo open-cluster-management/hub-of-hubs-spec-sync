@@ -73,8 +73,7 @@ func (r *genericSpecToDBReconciler) Reconcile(ctx context.Context, request ctrl.
 }
 
 func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.Request,
-	log logr.Logger,
-) (string, client.Object, error) {
+	log logr.Logger) (string, client.Object, error) {
 	instance := r.createInstance()
 
 	err := r.client.Get(ctx, request.NamespacedName, instance)
@@ -101,8 +100,7 @@ func isInstanceBeingDeleted(instance client.Object) bool {
 }
 
 func (r *genericSpecToDBReconciler) removeFinalizerAndDelete(ctx context.Context, instance client.Object,
-	log logr.Logger,
-) error {
+	log logr.Logger) error {
 	if !controllerutil.ContainsFinalizer(instance, r.finalizerName) {
 		return nil
 	}
@@ -140,8 +138,7 @@ func (r *genericSpecToDBReconciler) addFinalizer(ctx context.Context, instance c
 }
 
 func (r *genericSpecToDBReconciler) processInstanceInTheDatabase(ctx context.Context, instance client.Object,
-	instanceUID string, log logr.Logger,
-) (client.Object, error) {
+	instanceUID string, log logr.Logger) (client.Object, error) {
 	instanceInTheDatabase := r.createInstance()
 	err := r.databaseConnectionPool.QueryRow(ctx,
 		fmt.Sprintf("SELECT payload FROM spec.%s WHERE id = $1", r.tableName),
@@ -186,8 +183,7 @@ func (r *genericSpecToDBReconciler) cleanInstance(instance client.Object) client
 }
 
 func (r *genericSpecToDBReconciler) deleteFromTheDatabase(ctx context.Context, name, namespace string,
-	log logr.Logger,
-) error {
+	log logr.Logger) error {
 	log.Info("Instance was deleted, update the deleted field in the database")
 
 	var err error
