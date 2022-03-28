@@ -11,11 +11,21 @@ import (
 	"github.com/open-cluster-management/governance-policy-propagator/controllers/common"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	err := ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.Policy{}).
+		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
+			annotations := object.GetAnnotations()
+			if annotations != nil {
+				if _, ok := annotations[hubOfHubsLocalPolicy]; ok {
+					return false
+				}
+			}
+			return true
+		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
@@ -23,7 +33,6 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 			tableName:              "policies",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/policy-cleanup",
 			createInstance:         func() client.Object { return &policiesv1.Policy{} },
-			processInstance:        processPolicyInstance,
 			cleanStatus:            cleanPolicyStatus,
 			areEqual:               arePoliciesEqual,
 		})
@@ -42,32 +51,6 @@ func cleanPolicyStatus(instance client.Object) {
 	}
 
 	policy.Status = policiesv1.PolicyStatus{}
-}
-
-func processPolicyInstance(instance client.Object) client.Object {
-	policy, ok := instance.(*policiesv1.Policy)
-
-	if !ok {
-		panic("wrong instance passed to processPolicyInstance: not policiesv1.Policy")
-	}
-
-	annotations := policy.GetAnnotations()
-	if annotations == nil {
-		return instance
-	}
-	if _, ok := annotations[hubOfHubsLocalPolicy]; ok {
-		return nil
-	}
-
-	labels := policy.GetLabels()
-	if labels == nil {
-		return instance
-	}
-	if _, ok := labels[rootPolicy]; ok {
-		return nil
-	}
-
-	return instance
 }
 
 func arePoliciesEqual(instance1, instance2 client.Object) bool {

@@ -11,11 +11,21 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	err := ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.PlacementBinding{}).
+		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
+			annotations := object.GetAnnotations()
+			if annotations != nil {
+				if _, ok := annotations[hubOfHubsLocalPolicy]; ok {
+					return false
+				}
+			}
+			return true
+		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
@@ -23,7 +33,6 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 			tableName:              "placementbindings",
 			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementbinding-cleanup",
 			createInstance:         func() client.Object { return &policiesv1.PlacementBinding{} },
-			processInstance:        processPlacementBindingInstance,
 			cleanStatus:            cleanPlacementBindingStatus,
 			areEqual:               arePlacementBindingsEqual,
 		})
@@ -42,25 +51,6 @@ func cleanPlacementBindingStatus(instance client.Object) {
 	}
 
 	placementBinding.Status = policiesv1.PlacementBindingStatus{}
-}
-
-func processPlacementBindingInstance(instance client.Object) client.Object {
-	policy, ok := instance.(*policiesv1.PlacementBinding)
-
-	if !ok {
-		panic("wrong instance passed to processPlacementBindingInstance: not appsv1.PlacementRule")
-	}
-
-	annotations := policy.GetAnnotations()
-	if annotations == nil {
-		return instance
-	}
-
-	if _, ok := annotations[hubOfHubsLocalPolicy]; ok {
-		return nil
-	}
-
-	return instance
 }
 
 func arePlacementBindingsEqual(instance1, instance2 client.Object) bool {

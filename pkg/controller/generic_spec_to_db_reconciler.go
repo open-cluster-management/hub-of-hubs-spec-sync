@@ -25,7 +25,6 @@ type genericSpecToDBReconciler struct {
 	tableName              string
 	finalizerName          string
 	createInstance         func() client.Object
-	processInstance        func(client.Object) client.Object
 	cleanStatus            func(client.Object)
 	areEqual               func(client.Object, client.Object) bool
 }
@@ -89,10 +88,6 @@ func (r *genericSpecToDBReconciler) processCR(ctx context.Context, request ctrl.
 
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to get the instance from hub: %w", err)
-	}
-
-	if r.processInstance != nil && r.processInstance(instance) == nil {
-		return "", nil, nil
 	}
 
 	if isInstanceBeingDeleted(instance) {
