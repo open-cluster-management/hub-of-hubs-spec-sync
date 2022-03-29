@@ -11,11 +11,21 @@ import (
 	"github.com/open-cluster-management/governance-policy-propagator/controllers/common"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.Policy{}).
+		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
+			annotations := object.GetAnnotations()
+			if annotations != nil {
+				if _, ok := annotations[hubOfHubsLocalPolicy]; ok {
+					return false
+				}
+			}
+			return true
+		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
