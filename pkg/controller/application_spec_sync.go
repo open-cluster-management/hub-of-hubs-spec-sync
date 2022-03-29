@@ -7,15 +7,20 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/stolostron/hub-of-hubs-spec-sync/pkg/helpers"
 	"k8s.io/apimachinery/pkg/api/equality"
 	appsv1beta1 "sigs.k8s.io/application/api/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 func addApplicationController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1beta1.Application{}).
+		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
+			return !helpers.HasAnnotation(object, hubOfHubsLocalResource)
+		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
