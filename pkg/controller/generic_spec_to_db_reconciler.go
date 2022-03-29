@@ -29,7 +29,10 @@ type genericSpecToDBReconciler struct {
 	areEqual               func(client.Object, client.Object) bool
 }
 
-const requeuePeriodSeconds = 5
+const (
+	requeuePeriodSeconds = 5
+	hubOfHubsLocalPolicy = "hub-of-hubs.open-cluster-management.io/local-resource"
+)
 
 func (r *genericSpecToDBReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {
 	reqLogger := r.log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
