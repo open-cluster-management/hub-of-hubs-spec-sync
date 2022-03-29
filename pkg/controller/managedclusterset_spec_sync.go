@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"k8s.io/apimachinery/pkg/api/equality"
 	clusterv1beta1 "open-cluster-management.io/api/cluster/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -43,12 +42,8 @@ func cleanManagedClusterSetStatus(instance client.Object) {
 }
 
 func areManagedClusterSetsEqual(instance1, instance2 client.Object) bool {
-	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
-
 	managedClusterSet1, ok1 := instance1.(*clusterv1beta1.ManagedClusterSet)
 	managedClusterSet2, ok2 := instance2.(*clusterv1beta1.ManagedClusterSet)
 
-	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(managedClusterSet1.Spec, managedClusterSet2.Spec)
-
-	return annotationMatch && specMatch
+	return ok1 && ok2 && managedClusterSet1.ObjectMeta.Name == managedClusterSet2.ObjectMeta.Name
 }
