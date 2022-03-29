@@ -5,6 +5,8 @@ package controller
 
 import (
 	"fmt"
+	"github.com/stolostron/hub-of-hubs-spec-sync/pkg/helpers"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	clusterv1alpha1 "github.com/open-cluster-management/api/cluster/v1alpha1"
@@ -16,6 +18,9 @@ import (
 func addPlacementController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&clusterv1alpha1.Placement{}).
+		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
+			return !helpers.HasAnnotation(object, hubOfHubsLocalResource)
+		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
