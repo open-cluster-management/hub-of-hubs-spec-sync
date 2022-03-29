@@ -1,9 +1,13 @@
+// Copyright (c) 2020 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
+
 package controller
 
 import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/stolostron/hub-of-hubs-spec-sync/pkg/helpers"
 	"k8s.io/apimachinery/pkg/api/equality"
 	subscriptionsv1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -15,7 +19,8 @@ func addSubscriptionController(mgr ctrl.Manager, databaseConnectionPool *pgxpool
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&subscriptionsv1.Subscription{}).
 		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
-			return object.GetNamespace() != "open-cluster-management"
+			return object.GetNamespace() != "open-cluster-management" &&
+				!helpers.HasAnnotation(object, hubOfHubsLocalResource)
 		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
