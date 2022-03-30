@@ -30,8 +30,7 @@ type genericSpecToDBReconciler struct {
 }
 
 const (
-	requeuePeriodSeconds   = 5
-	hubOfHubsLocalResource = "hub-of-hubs.open-cluster-management.io/local-resource"
+	requeuePeriodSeconds = 5
 )
 
 func (r *genericSpecToDBReconciler) Reconcile(ctx context.Context, request ctrl.Request) (ctrl.Result, error) {

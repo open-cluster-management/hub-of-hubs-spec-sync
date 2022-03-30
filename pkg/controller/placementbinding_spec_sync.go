@@ -8,19 +8,14 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
-	"github.com/stolostron/hub-of-hubs-spec-sync/pkg/helpers"
 	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&policiesv1.PlacementBinding{}).
-		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
-			return !helpers.HasAnnotation(object, hubOfHubsLocalResource)
-		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,
