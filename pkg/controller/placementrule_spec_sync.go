@@ -8,19 +8,14 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	appsv1 "github.com/open-cluster-management/multicloud-operators-placementrule/pkg/apis/apps/v1"
-	"github.com/stolostron/hub-of-hubs-spec-sync/pkg/helpers"
 	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1.PlacementRule{}).
-		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
-			return !helpers.HasAnnotation(object, hubOfHubsLocalResource)
-		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,

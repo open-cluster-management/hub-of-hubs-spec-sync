@@ -5,8 +5,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/stolostron/hub-of-hubs-spec-sync/pkg/helpers"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -18,9 +16,6 @@ import (
 func addManagedClusterSetBindingController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool) error {
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&clusterv1beta1.ManagedClusterSetBinding{}).
-		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
-			return !helpers.HasAnnotation(object, hubOfHubsLocalResource)
-		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
 			databaseConnectionPool: databaseConnectionPool,

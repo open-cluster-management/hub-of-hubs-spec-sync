@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/stolostron/hub-of-hubs-spec-sync/pkg/helpers"
 	"k8s.io/apimachinery/pkg/api/equality"
 	channelsv1 "open-cluster-management.io/multicloud-operators-channel/pkg/apis/apps/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -19,8 +18,7 @@ func addChannelController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool
 	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&channelsv1.Channel{}).
 		WithEventFilter(predicate.NewPredicateFuncs(func(object client.Object) bool {
-			return object.GetNamespace() != "open-cluster-management" &&
-				!helpers.HasAnnotation(object, hubOfHubsLocalResource)
+			return object.GetNamespace() != "open-cluster-management"
 		})).
 		Complete(&genericSpecToDBReconciler{
 			client:                 mgr.GetClient(),
