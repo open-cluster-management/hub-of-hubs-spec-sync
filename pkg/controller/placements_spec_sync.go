@@ -21,7 +21,7 @@ func addPlacementController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Po
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("placements-spec-syncer"),
 			tableName:              "placements",
-			finalizerName:          "hub-of-hubs.open-cluster-management.io/placements-cleanup",
+			finalizerName:          "hub-of-hubs.open-cluster-management.io/placement-cleanup",
 			createInstance:         func() client.Object { return &clusterv1alpha1.Placement{} },
 			cleanStatus:            cleanPlacementStatus,
 			areEqual:               arePlacementsEqual,
