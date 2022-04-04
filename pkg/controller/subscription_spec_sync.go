@@ -47,11 +47,11 @@ func cleanSubscriptionStatus(instance client.Object) {
 
 func areSubscriptionsEqual(instance1, instance2 client.Object) bool {
 	// TODO: subscription come out as not equal because of package override field, check if it matters.
-	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
-
 	subscription1, ok1 := instance1.(*subscriptionsv1.Subscription)
 	subscription2, ok2 := instance2.(*subscriptionsv1.Subscription)
-	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(subscription1.Spec, subscription2.Spec)
 
-	return annotationMatch && specMatch
+	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(subscription1.Spec, subscription2.Spec)
+	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
+
+	return specMatch && annotationMatch
 }

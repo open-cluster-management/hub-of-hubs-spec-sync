@@ -43,12 +43,11 @@ func cleanPlacementStatus(instance client.Object) {
 }
 
 func arePlacementsEqual(instance1, instance2 client.Object) bool {
-	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
-
 	placement1, ok1 := instance1.(*clusterv1alpha1.Placement)
 	placement2, ok2 := instance2.(*clusterv1alpha1.Placement)
 
 	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(placement1.Spec, placement2.Spec)
+	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
-	return annotationMatch && specMatch
+	return specMatch && annotationMatch
 }
