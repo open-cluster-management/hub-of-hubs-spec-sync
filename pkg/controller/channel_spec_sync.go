@@ -49,7 +49,11 @@ func areChannelsEqual(instance1, instance2 client.Object) bool {
 	channel1, ok1 := instance1.(*channelsv1.Channel)
 	channel2, ok2 := instance2.(*channelsv1.Channel)
 
-	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(channel1.Spec, channel2.Spec)
+	if !ok1 || !ok2 {
+		return false
+	}
+
+	specMatch := equality.Semantic.DeepEqual(channel1.Spec, channel2.Spec)
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
 	return specMatch && annotationMatch

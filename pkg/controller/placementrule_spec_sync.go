@@ -46,7 +46,11 @@ func arePlacementRulesEqual(instance1, instance2 client.Object) bool {
 	placementRule1, ok1 := instance1.(*appsv1.PlacementRule)
 	placementRule2, ok2 := instance2.(*appsv1.PlacementRule)
 
-	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(placementRule1.Spec, placementRule2.Spec)
+	if !ok1 || !ok2 {
+		return false
+	}
+
+	specMatch := equality.Semantic.DeepEqual(placementRule1.Spec, placementRule2.Spec)
 	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
 	return specMatch && annotationMatch

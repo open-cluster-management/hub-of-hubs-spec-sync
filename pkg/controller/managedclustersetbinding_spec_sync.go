@@ -44,7 +44,11 @@ func areManagedClusterSetBindingsEqual(instance1, instance2 client.Object) bool 
 	managedClusterSetBinding1, ok1 := instance1.(*clusterv1beta1.ManagedClusterSetBinding)
 	managedClusterSetBinding2, ok2 := instance2.(*clusterv1beta1.ManagedClusterSetBinding)
 
-	specMatch := ok1 && ok2 && equality.Semantic.DeepEqual(managedClusterSetBinding1.Spec,
+	if !ok1 || !ok2 {
+		return false
+	}
+
+	specMatch := equality.Semantic.DeepEqual(managedClusterSetBinding1.Spec,
 		managedClusterSetBinding2.Spec)
 
 	return specMatch && managedClusterSetBinding1.Namespace == managedClusterSetBinding2.Namespace
