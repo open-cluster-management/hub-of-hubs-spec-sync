@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	"github.com/open-cluster-management/governance-policy-propagator/controllers/common"
+	"k8s.io/apimachinery/pkg/api/equality"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -57,5 +58,7 @@ func arePoliciesEqual(instance1, instance2 client.Object) bool {
 	policy2WithoutTemplates := policy2.DeepCopy()
 	policy2WithoutTemplates.Spec.PolicyTemplates = nil
 
-	return common.CompareSpecAndAnnotation(policy1WithoutTemplates, policy2WithoutTemplates)
+	labelsMatch := equality.Semantic.DeepEqual(instance1.GetLabels(), instance2.GetLabels())
+
+	return common.CompareSpecAndAnnotation(policy1WithoutTemplates, policy2WithoutTemplates) && labelsMatch
 }

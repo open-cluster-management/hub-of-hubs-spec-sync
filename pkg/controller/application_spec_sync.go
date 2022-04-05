@@ -50,7 +50,8 @@ func areApplicationsEqual(instance1, instance2 client.Object) bool {
 	}
 
 	specMatch := equality.Semantic.DeepEqual(application1.Spec, application2.Spec)
-	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
+	annotationsMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
+	labelsMatch := equality.Semantic.DeepEqual(instance1.GetLabels(), instance2.GetLabels())
 
-	return specMatch && annotationMatch
+	return specMatch && annotationsMatch && labelsMatch
 }

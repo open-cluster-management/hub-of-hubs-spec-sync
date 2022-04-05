@@ -11,7 +11,7 @@ linters-settings:
     replace-allow-list:
       - k8s.io/client-go # Kuberentes client specific issue. See https://maelvls.dev/client-go-transitive-hell/.
   dupl:
-    threshold: 250
+    threshold: 260
 
 run:
   skip-dirs:
