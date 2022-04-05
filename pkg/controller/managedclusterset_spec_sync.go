@@ -54,6 +54,5 @@ func areManagedClusterSetsEqual(instance1, instance2 client.Object) bool {
 	annotationsMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 	labelsMatch := equality.Semantic.DeepEqual(instance1.GetLabels(), instance2.GetLabels())
 
-	return specMatch && annotationsMatch && labelsMatch &&
-		managedClusterSet1.ObjectMeta.Name == managedClusterSet2.ObjectMeta.Name
+	return specMatch && annotationsMatch && labelsMatch
 }
