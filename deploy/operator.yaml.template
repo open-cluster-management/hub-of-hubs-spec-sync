@@ -80,6 +80,20 @@ rules:
   - update
   - watch
 - apiGroups:
+  - "cluster.open-cluster-management.io"
+  resources:
+  - managedclustersets
+  - managedclustersets/finalizers
+  - managedclustersetbindings
+  - managedclustersetbindings/finalizers
+  - placements
+  - placements/finalizers
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
   - "apps.open-cluster-management.io"
   resources:
   - placementrules

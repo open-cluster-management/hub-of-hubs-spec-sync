@@ -188,9 +188,18 @@ func (r *genericSpecToDBReconciler) deleteFromTheDatabase(ctx context.Context, n
 	log logr.Logger) error {
 	log.Info("Instance was deleted, update the deleted field in the database")
 
-	_, err := r.databaseConnectionPool.Exec(ctx,
-		fmt.Sprintf(`UPDATE spec.%s SET deleted = true WHERE payload -> 'metadata' ->> 'name' = $1 AND
+	var err error
+
+	if namespace != "" {
+		_, err = r.databaseConnectionPool.Exec(ctx,
+			fmt.Sprintf(`UPDATE spec.%s SET deleted = true WHERE payload -> 'metadata' ->> 'name' = $1 AND
 			     payload -> 'metadata' ->> 'namespace' = $2 AND deleted = false`, r.tableName), name, namespace)
+	} else {
+		_, err = r.databaseConnectionPool.Exec(ctx,
+			fmt.Sprintf(`UPDATE spec.%s SET deleted = true WHERE payload -> 'metadata' ->> 'name' = $1 AND
+			     payload -> 'metadata' ->> 'namespace' IS NULL AND deleted = false`, r.tableName), name)
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to delete instance from the database: %w", err)
 	}

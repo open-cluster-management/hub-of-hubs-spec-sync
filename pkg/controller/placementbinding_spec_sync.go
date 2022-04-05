@@ -43,8 +43,6 @@ func cleanPlacementBindingStatus(instance client.Object) {
 }
 
 func arePlacementBindingsEqual(instance1, instance2 client.Object) bool {
-	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
-
 	placementBinding1, ok1 := instance1.(*policiesv1.PlacementBinding)
 	placementBinding2, ok2 := instance2.(*policiesv1.PlacementBinding)
 
@@ -54,6 +52,7 @@ func arePlacementBindingsEqual(instance1, instance2 client.Object) bool {
 
 	placementRefMatch := equality.Semantic.DeepEqual(placementBinding1.PlacementRef, placementBinding2.PlacementRef)
 	subjectsMatch := equality.Semantic.DeepEqual(placementBinding1.Subjects, placementBinding2.Subjects)
+	annotationMatch := equality.Semantic.DeepEqual(instance1.GetAnnotations(), instance2.GetAnnotations())
 
-	return annotationMatch && placementRefMatch && subjectsMatch
+	return placementRefMatch && subjectsMatch && annotationMatch
 }
