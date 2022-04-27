@@ -25,7 +25,7 @@ func addSubscriptionController(mgr ctrl.Manager, databaseConnectionPool *pgxpool
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("subscriptions-spec-syncer"),
 			tableName:              "subscriptions",
-			finalizerName:          "hub-of-hubs.open-cluster-management.io/subscription-cleanup",
+			finalizerName:          hohCleanupFinalizer,
 			createInstance:         func() client.Object { return &subscriptionsv1.Subscription{} },
 			cleanStatus:            cleanSubscriptionStatus,
 			areEqual:               areSubscriptionsEqual,

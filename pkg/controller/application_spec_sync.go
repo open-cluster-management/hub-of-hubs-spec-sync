@@ -21,7 +21,7 @@ func addApplicationController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("applications-spec-syncer"),
 			tableName:              "applications",
-			finalizerName:          "hub-of-hubs.open-cluster-management.io/application-cleanup",
+			finalizerName:          hohCleanupFinalizer,
 			createInstance:         func() client.Object { return &appsv1beta1.Application{} },
 			cleanStatus:            cleanApplicationStatus,
 			areEqual:               areApplicationsEqual,

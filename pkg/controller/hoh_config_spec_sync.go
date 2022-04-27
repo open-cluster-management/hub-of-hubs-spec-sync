@@ -29,7 +29,7 @@ func addHubOfHubsConfigController(mgr ctrl.Manager, databaseConnectionPool *pgxp
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("hoh-configs-spec-syncer"),
 			tableName:              "configs",
-			finalizerName:          "hub-of-hubs.open-cluster-management.io/hoh-config-cleanup",
+			finalizerName:          hohCleanupFinalizer,
 			createInstance:         func() client.Object { return &configv1.Config{} },
 			cleanStatus:            cleanConfigStatus,
 			areEqual:               areConfigsEqual,

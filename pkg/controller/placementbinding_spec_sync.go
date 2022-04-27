@@ -21,7 +21,7 @@ func addPlacementBindingController(mgr ctrl.Manager, databaseConnectionPool *pgx
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("placementbindings-spec-syncer"),
 			tableName:              "placementbindings",
-			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementbinding-cleanup",
+			finalizerName:          hohCleanupFinalizer,
 			createInstance:         func() client.Object { return &policiesv1.PlacementBinding{} },
 			cleanStatus:            cleanPlacementBindingStatus,
 			areEqual:               arePlacementBindingsEqual,

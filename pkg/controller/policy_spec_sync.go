@@ -22,7 +22,7 @@ func addPolicyController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool)
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("policies-spec-syncer"),
 			tableName:              "policies",
-			finalizerName:          "hub-of-hubs.open-cluster-management.io/policy-cleanup",
+			finalizerName:          hohCleanupFinalizer,
 			createInstance:         func() client.Object { return &policiesv1.Policy{} },
 			cleanStatus:            cleanPolicyStatus,
 			areEqual:               arePoliciesEqual,

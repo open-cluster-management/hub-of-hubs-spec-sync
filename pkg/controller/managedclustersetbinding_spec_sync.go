@@ -21,7 +21,7 @@ func addManagedClusterSetBindingController(mgr ctrl.Manager, databaseConnectionP
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("managedclustersetbindings-spec-syncer"),
 			tableName:              "managedclustersetbindings",
-			finalizerName:          "hub-of-hubs.open-cluster-management.io/managedclustersetbinding-cleanup",
+			finalizerName:          hohCleanupFinalizer,
 			createInstance:         func() client.Object { return &clusterv1beta1.ManagedClusterSetBinding{} },
 			cleanStatus:            cleanManagedClusterSetBindingsStatus,
 			areEqual:               areManagedClusterSetBindingsEqual,

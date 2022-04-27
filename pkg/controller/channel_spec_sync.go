@@ -25,7 +25,7 @@ func addChannelController(mgr ctrl.Manager, databaseConnectionPool *pgxpool.Pool
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("channels-spec-syncer"),
 			tableName:              "channels",
-			finalizerName:          "hub-of-hubs.open-cluster-management.io/channel-cleanup",
+			finalizerName:          hohCleanupFinalizer,
 			createInstance:         func() client.Object { return &channelsv1.Channel{} },
 			cleanStatus:            cleanChannelStatus,
 			areEqual:               areChannelsEqual,

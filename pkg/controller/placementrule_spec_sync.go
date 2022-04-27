@@ -21,7 +21,7 @@ func addPlacementRuleController(mgr ctrl.Manager, databaseConnectionPool *pgxpoo
 			databaseConnectionPool: databaseConnectionPool,
 			log:                    ctrl.Log.WithName("placementrules-spec-syncer"),
 			tableName:              "placementrules",
-			finalizerName:          "hub-of-hubs.open-cluster-management.io/placementrule-cleanup",
+			finalizerName:          hohCleanupFinalizer,
 			createInstance:         func() client.Object { return &appsv1.PlacementRule{} },
 			cleanStatus:            cleanPlacementRuleStatus,
 			areEqual:               arePlacementRulesEqual,
